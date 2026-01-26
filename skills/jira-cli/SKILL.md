@@ -120,13 +120,22 @@ jira issue create -pMPD -tTask -s"New task"
 # With custom fields
 jira issue create -tStory -s"Title" --custom story-points=5
 
-# From template or stdin
+# From template or stdin (RECOMMENDED for multi-line descriptions)
 jira issue create --template /path/to/template.md
 echo "Description" | jira issue create -s"Summary" -tTask
 
+# With multi-line body using \n (use with echo -e or printf)
+echo -e "Line 1\nLine 2\nLine 3" | jira issue create -s"Summary" -tTask
+
+# Or, use literal newlines in -b flag with double quotes for multi-line descriptions
+# Literal newlines work properly when quoted correctly with double quotes
+jira issue create -b"Intro line
+- Bullet 1
+- Bullet 2" -s"Title"
+
 # Options
 jira issue create --web                     # Open in browser
-jira issue create --no-input                # No prompts
+jira issue create --no-input                # No prompts (useful for automation)
 jira issue create --raw                     # JSON output
 
 # With versions
