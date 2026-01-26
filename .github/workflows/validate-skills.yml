@@ -1,0 +1,66 @@
+name: Validate Skills
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'skills/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'skills/**'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      
+      - name: Clone skills-ref tool
+        run: |
+          git clone --depth 1 https://github.com/agentskills/agentskills.git /tmp/agentskills
+      
+      - name: Install skills-ref
+        run: |
+          cd /tmp/agentskills/skills-ref
+          uv sync
+      
+      - name: Validate skills
+        run: |
+          # Activate the virtual environment
+          source /tmp/agentskills/skills-ref/.venv/bin/activate
+          
+          # Find all skill directories (directories containing SKILL.md)
+          skill_dirs=$(find skills -type f -name "SKILL.md" -exec dirname {} \;)
+          
+          if [ -z "$skill_dirs" ]; then
+            echo "No skills found to validate."
+            exit 0
+          fi
+          
+          # Validate each skill
+          exit_code=0
+          for skill_dir in $skill_dirs; do
+            echo "Validating: $skill_dir"
+            if skills-ref validate "$skill_dir"; then
+              echo "✓ $skill_dir is valid"
+            else
+              echo "✗ $skill_dir validation failed"
+              exit_code=1
+            fi
+          done
+          
+          exit $exit_code
