@@ -22,4 +22,4 @@ Provide concrete examples of inputs and expected outputs:
 
 ## Notes
 
-Keep your SKILL.md under 500 lines. Move detailed reference material to `references/` directory.
+Keep your SKILL.md under 500 lines and 5000 tokens. Move detailed reference material to `references/` directory.

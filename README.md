@@ -117,7 +117,7 @@ Skills in this repository can be used with various AI platforms that support the
 Use the [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref) reference library to validate your skills:
 
 ```bash
-skills-ref validate ./skills/my-skill
+skills-ref validate ./skills/my-skill-name
 ```
 
 This checks that your `SKILL.md` frontmatter is valid and follows all naming conventions.
