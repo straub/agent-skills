@@ -16,13 +16,14 @@ Use [jira-cli](https://github.com/ankitpokhrel/jira-cli) to interact with Jira f
 
 ## Critical Usage Patterns
 
-### Always Use Plain Mode
+### Always Use Plain Mode or --no-input
 
-**IMPORTANT**: Always use `--plain` flag to avoid interactive UI:
+**IMPORTANT**: Always use `--plain` flag to avoid interactive UI, or `--no-input` to skip prompts:
 
 ```bash
 jira issue list --plain              # ✓ Good - parseable output
 jira issue list                      # ✗ Bad - opens interactive mode
+jira issue create --no-input         # Skip prompts during creation
 ```
 
 ### Use JSON for Structured Data
@@ -134,6 +135,9 @@ jira issue create -tBug --affects-version "v1.1.0"
 
 # Subtask (parent required)
 jira issue create -t"Sub-task" -P"MPD-1234" -s"Subtask title"
+
+# Link to epic during creation (use -P/--parent flag)
+jira issue create -pMPD -tStory -P"MPD-5964" -s"Story title" -b"Description" --no-input
 ```
 
 ### Update Issues
