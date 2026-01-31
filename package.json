@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "eval": "promptfoo eval",
-    "eval:view": "promptfoo view"
+    "eval:view": "promptfoo view",
+    "eval:claude": "promptfoo eval -p anthropic:claude-3-5-sonnet-20241022",
+    "eval:compare": "promptfoo eval -p openai:gpt-4o-mini -p anthropic:claude-3-5-sonnet-20241022"
   },
   "keywords": [],
   "author": "",
