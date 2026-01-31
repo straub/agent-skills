@@ -6,13 +6,15 @@ on:
     paths:
       - 'skills/**'
       - 'promptfooconfig.yaml'
-      - 'eval-providers/**'
+      - 'package.json'
+      - '.github/workflows/validate-skills.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'skills/**'
       - 'promptfooconfig.yaml'
-      - 'eval-providers/**'
+      - 'package.json'
+      - '.github/workflows/validate-skills.yml'
   workflow_dispatch:
 
 jobs:
@@ -106,10 +108,36 @@ jobs:
           # Run evaluations with available provider
           if [ -n "$ANTHROPIC_API_KEY" ]; then
             echo "🔍 Running evaluations with Claude (Anthropic)"
-            npx promptfoo eval -p anthropic:claude-3-5-sonnet-20241022
+            npx promptfoo eval -p anthropic:claude-3-5-sonnet-20241022 --no-table
           elif [ -n "$OPENAI_API_KEY" ]; then
             echo "🔍 Running evaluations with GPT-4o-mini (OpenAI)"
-            npx promptfoo eval
+            npx promptfoo eval --no-table
+          fi
+          
+          # Check for failures in the results
+          if [ -f promptfoo-results.json ]; then
+            echo ""
+            echo "📊 Evaluation Summary:"
+            # Extract pass/fail stats from the JSON results
+            cat promptfoo-results.json | grep -o '"passed":[0-9]*' | head -1 || echo "Results file found"
+            
+            # Note: Promptfoo exits with non-zero if there are failures
+            # The job will fail automatically if the eval command fails
+          fi
+      
+      - name: Check evaluation results
+        if: always()
+        run: |
+          if [ -f promptfoo-results.json ]; then
+            echo "✅ Evaluation completed. Results saved."
+            # Show summary if jq is available
+            if command -v jq &> /dev/null; then
+              echo ""
+              echo "Summary:"
+              jq -r '.stats | "Total: \(.totalTests) | Passed: \(.passed) | Failed: \(.failed) | Errors: \(.errors)"' promptfoo-results.json || true
+            fi
+          else
+            echo "ℹ️  No evaluation results found (likely skipped due to missing API keys)"
           fi
       
       - name: Upload evaluation results
