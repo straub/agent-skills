@@ -122,6 +122,52 @@ skills-ref validate ./skills/my-skill-name
 
 This checks that your `SKILL.md` frontmatter is valid and follows all naming conventions.
 
+## Evaluating Skills
+
+This repository includes automated evaluations using [Promptfoo](https://www.promptfoo.dev/) to test how well skills guide LLMs to produce correct responses.
+
+### Running Evaluations Locally
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Set up an API key for your preferred LLM provider:
+```bash
+# For OpenAI
+export OPENAI_API_KEY=your_api_key_here
+
+# OR for Claude (Anthropic)
+export ANTHROPIC_API_KEY=your_api_key_here
+```
+
+3. Run evaluations:
+```bash
+# With OpenAI (default)
+npm run eval
+
+# With Claude
+npx promptfoo eval -p anthropic:claude-3-5-sonnet-20241022
+
+# Compare multiple providers
+npx promptfoo eval -p openai:gpt-4o-mini -p anthropic:claude-3-5-sonnet-20241022
+```
+
+4. View results:
+```bash
+npm run eval:view
+```
+
+See [EVAL_README.md](EVAL_README.md) for detailed documentation on running evaluations with different providers, including GitHub Copilot.
+
+### CI Evaluations
+
+Evaluations run automatically in CI on skill changes. To enable:
+
+1. Go to repository Settings → Secrets and variables → Actions
+2. Add `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` as a repository secret
+
 ## Resources
 
 - [Agent Skills Specification](https://agentskills.io/specification)

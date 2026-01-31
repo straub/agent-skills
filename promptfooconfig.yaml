@@ -1,0 +1,126 @@
+# Promptfoo Evaluation Configuration for Agent Skills
+# This evaluates the effectiveness of skills by testing them with real LLM providers
+
+description: 'Agent Skills Evaluation Suite'
+
+# Provider configuration - can be overridden via CLI or environment
+# Default to gpt-4o-mini for cost-effectiveness
+# Override with: promptfoo eval -c promptfooconfig.yaml -p anthropic:claude-3-5-sonnet-20241022
+providers:
+  - openai:gpt-4o-mini
+
+# Prompts - These inject skill content into the LLM context
+prompts:
+  - label: 'TDD Skill'
+    id: file://skills/test-driven-development/SKILL.md
+  - label: 'Jira CLI Skill'  
+    id: file://skills/jira-cli/SKILL.md
+
+# Test cases
+tests:
+  # Test-Driven Development Skill Tests
+  - description: 'TDD: Should follow Red-Green-Refactor cycle'
+    prompt: 'TDD Skill'
+    vars:
+      task: 'I need to implement a function that calculates the factorial of a number. Guide me through the process.'
+    assert:
+      - type: contains-any
+        value:
+          - 'test'
+          - 'Red'
+          - 'Green'
+      - type: contains-any
+        value:
+          - 'test list'
+          - 'scenarios'
+          - 'Write a test'
+    
+  - description: 'TDD: Should create test list first'
+    prompt: 'TDD Skill'
+    vars:
+      task: 'I need to implement a user authentication feature with login and logout. Where do I start?'
+    assert:
+      - type: contains-any
+        value:
+          - 'test list'
+          - 'list'
+          - 'scenarios'
+          - 'test case'
+
+  - description: 'TDD: Should handle bug fixes with failing test first'
+    prompt: 'TDD Skill'
+    vars:
+      task: 'I found a bug where the login function accepts empty passwords. How should I fix this?'
+    assert:
+      - type: contains-any
+        value:
+          - 'failing test'
+          - 'reproduce'
+          - 'test first'
+          - 'RED'
+
+  - description: 'TDD: Should address legacy code appropriately'
+    prompt: 'TDD Skill'
+    vars:
+      task: 'I need to add a feature to legacy code that has no tests. What should I do?'
+    assert:
+      - type: contains-any
+        value:
+          - 'characterization'
+          - 'legacy'
+          - 'test what you change'
+          - 'Strangler Fig'
+
+  - description: 'TDD: Should discourage skipping tests'
+    prompt: 'TDD Skill'
+    vars:
+      task: 'Can I skip writing tests for this simple utility function?'
+    assert:
+      - type: icontains
+        value: 'test'
+      - type: not-icontains
+        value: 'yes, skip'
+
+  # Jira CLI Skill Tests
+  - description: 'Jira CLI: Should use --plain flag for listing'
+    prompt: 'Jira CLI Skill'
+    vars:
+      task: 'Show me all open issues in the PROJECT project.'
+    assert:
+      - type: contains
+        value: '--plain'
+      - type: contains-any
+        value:
+          - 'jira issue list'
+          - 'jira list'
+
+  - description: 'Jira CLI: Should use --no-input for creation'
+    prompt: 'Jira CLI Skill'
+    vars:
+      task: 'Create a new task in Jira for implementing user authentication.'
+    assert:
+      - type: contains
+        value: '--no-input'
+
+  - description: 'Jira CLI: Should recommend template for complex descriptions'
+    prompt: 'Jira CLI Skill'
+    vars:
+      task: 'Create a new user story with multiple acceptance criteria and bullet points.'
+    assert:
+      - type: contains-any
+        value:
+          - 'template'
+          - '--template'
+
+  - description: 'Jira CLI: Should use JQL for complex queries'
+    prompt: 'Jira CLI Skill'
+    vars:
+      task: 'Find all high priority bugs that were updated in the last week and are assigned to me.'
+    assert:
+      - type: contains-any
+        value:
+          - 'JQL'
+          - '-q'
+
+# Output configuration
+outputPath: './promptfoo-results.json'

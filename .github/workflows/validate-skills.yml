@@ -5,10 +5,14 @@ on:
     branches: [ main ]
     paths:
       - 'skills/**'
+      - 'promptfooconfig.yaml'
+      - 'eval-providers/**'
   pull_request:
     branches: [ main ]
     paths:
       - 'skills/**'
+      - 'promptfooconfig.yaml'
+      - 'eval-providers/**'
   workflow_dispatch:
 
 jobs:
@@ -66,3 +70,52 @@ jobs:
           done
           
           exit $exit_code
+
+  evaluate:
+    runs-on: ubuntu-latest
+    needs: validate
+    permissions:
+      contents: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Run Promptfoo evaluations
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Check if either API key is available
+          if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "⚠️  No API keys found (OPENAI_API_KEY or ANTHROPIC_API_KEY)"
+            echo "⚠️  Skipping LLM-based evaluations"
+            echo "ℹ️  To enable full evaluations, add OPENAI_API_KEY or ANTHROPIC_API_KEY to repository secrets"
+            exit 0
+          fi
+          
+          # Run evaluations with available provider
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "🔍 Running evaluations with Claude (Anthropic)"
+            npx promptfoo eval -p anthropic:claude-3-5-sonnet-20241022
+          elif [ -n "$OPENAI_API_KEY" ]; then
+            echo "🔍 Running evaluations with GPT-4o-mini (OpenAI)"
+            npx promptfoo eval
+          fi
+      
+      - name: Upload evaluation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promptfoo-results
+          path: promptfoo-results*.json
+          retention-days: 30
