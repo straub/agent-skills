@@ -4,5 +4,6 @@ __pycache__/
 .vscode/
 node_modules/
 promptfoo-results*.json
+output.json
 .promptfoo/
 .env

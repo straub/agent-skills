@@ -33,17 +33,11 @@ echo "GITHUB_TOKEN=your_github_token_here" >> .env
 ### 3. Run Evaluations
 
 ```bash
-# Run with both OpenAI and Claude (default)
+# Run with OpenAI via GitHub Models (default)
 npm run eval
 
-# Run with OpenAI only
+# Run with specific OpenAI model
 npm run eval:openai
-
-# Run with Claude only  
-npm run eval:claude
-
-# Compare OpenAI vs Claude
-npm run eval:compare
 ```
 
 ### 4. View Results
@@ -59,26 +53,18 @@ GitHub Models provides access to multiple AI providers:
 ### OpenAI Models
 - `github:openai/gpt-4o-mini` - **Default**, balanced performance and cost
 - `github:openai/gpt-4o` - Most capable OpenAI model
-- `github:openai/gpt-5` - Latest generation (if available)
-
-### Claude Models
-- `github:anthropic/claude-4-sonnet` - **Default**, best balance
-- `github:anthropic/claude-4-opus` - Most capable Claude model
-- `github:anthropic/claude-3-5-sonnet` - Previous generation
 
 ### Other Providers
-- `github:google/gemini-2.5-pro` - Google Gemini
-- `github:meta/llama-4-maverick` - Meta Llama 4
-- `github:xai/grok-4` - xAI Grok
+As other providers become available through GitHub Models, they can be configured in the same way.
 
 ### Custom Model Selection
 
 ```bash
-# Use specific models
-npx promptfoo eval -p github:openai/gpt-5 -p github:anthropic/claude-4-opus
+# Use specific model
+npx promptfoo eval -p github:openai/gpt-4o
 
 # Single model
-npx promptfoo eval -p github:google/gemini-2.5-pro
+npx promptfoo eval -p github:openai/gpt-4o-mini
 ```
 
 ## CI Integration

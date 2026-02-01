@@ -6,9 +6,7 @@
   "scripts": {
     "eval": "promptfoo eval",
     "eval:view": "promptfoo view",
-    "eval:openai": "promptfoo eval -p github:openai/gpt-4o-mini",
-    "eval:claude": "promptfoo eval -p github:anthropic/claude-4-sonnet",
-    "eval:compare": "promptfoo eval -p github:openai/gpt-4o-mini -p github:anthropic/claude-4-sonnet"
+    "eval:openai": "promptfoo eval -p github:openai/gpt-4o-mini"
   },
   "keywords": [],
   "author": "",

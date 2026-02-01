@@ -18,16 +18,20 @@ We use [Promptfoo](https://www.promptfoo.dev/) to evaluate how well our skills g
 npm install
 ```
 
-2. Set up your LLM provider API key (choose one):
+2. Set up your GitHub token (for GitHub Models):
 
-**For OpenAI (GPT-4):**
+**For GitHub Models (recommended):**
+GitHub Models provides access to OpenAI models through a unified interface.
+
 ```bash
-export OPENAI_API_KEY=your_api_key_here
+export GITHUB_TOKEN=your_github_token_here
 ```
 
-**For Anthropic (Claude):**
+Get your token from: https://github.com/settings/tokens
+
+**For direct OpenAI API (alternative):**
 ```bash
-export ANTHROPIC_API_KEY=your_api_key_here
+export OPENAI_API_KEY=your_api_key_here
 ```
 
 **For GitHub Copilot:**
@@ -35,30 +39,20 @@ GitHub Copilot support requires additional configuration. See [Copilot Configura
 
 ### Run Evaluations
 
-**With both OpenAI and Claude (default via GitHub Models):**
+**With OpenAI via GitHub Models (default):**
 ```bash
 npm run eval
 ```
 
-**With OpenAI only:**
+**With specific OpenAI model:**
 ```bash
 npm run eval:openai
 ```
 
-**With Claude only:**
-```bash
-npm run eval:claude
-```
-
-**With multiple models (comparison):**
-```bash
-npm run eval:compare
-```
-
 **With a specific model via GitHub Models:**
 ```bash
-npx promptfoo eval -p github:anthropic/claude-4-opus
-npx promptfoo eval -p github:openai/gpt-5
+npx promptfoo eval -p github:openai/gpt-4o
+npx promptfoo eval -p github:openai/gpt-4o-mini
 ```
 ```
 
@@ -77,7 +71,7 @@ cat promptfoo-results.json
 
 ## Using GitHub Models
 
-GitHub Models provide access to multiple AI providers (OpenAI, Claude, Gemini, etc.) through a unified interface.
+GitHub Models provide access to multiple AI providers (including OpenAI) through a unified interface.
 
 ### Setup for GitHub Models
 
@@ -95,38 +89,29 @@ GITHUB_TOKEN=your_github_token_here
 3. **Run Evaluations:**
 
 ```bash
-# Use default models (OpenAI GPT-4o-mini and Claude 4 Sonnet)
+# Use default model (OpenAI GPT-4o-mini)
 npm run eval
 
-# Or specific models
-npm run eval:openai    # OpenAI only
-npm run eval:claude    # Claude only
-npm run eval:compare   # Both providers
+# Or specific model
+npm run eval:openai
 ```
 
 GitHub Models provide access to:
-- OpenAI models (GPT-4o, GPT-5 series)
-- Claude models (Claude 4 Sonnet, Claude 4 Opus)
-- Google Gemini, Meta Llama, and other providers
+- OpenAI models (GPT-4o, GPT-4o-mini, etc.)
+- Other providers as they become available
 
 ## Provider Options
 
-### GitHub Models (All Providers)
+### GitHub Models (Recommended)
 All evaluations now use GitHub Models, which provides unified access:
 
 **OpenAI via GitHub Models:**
 - `github:openai/gpt-4o-mini` - **Default**, balanced performance and cost
 - `github:openai/gpt-4o` - Most capable OpenAI model
-- `github:openai/gpt-5` - Latest OpenAI model
 
-**Claude via GitHub Models:**
-- `github:anthropic/claude-4-sonnet` - **Default**, best balance
-- `github:anthropic/claude-4-opus` - Most capable Claude model
-- `github:anthropic/claude-3-5-sonnet` - Previous generation
-
-**Other Providers:**
-- `github:google/gemini-2.5-pro` - Google's latest
-- `github:meta/llama-4-maverick` - Meta's Llama 4
+**Direct OpenAI API (alternative):**
+- `openai:gpt-4o-mini` - Via OpenAI API directly
+- `openai:gpt-4o` - Via OpenAI API directly
 
 ### Configuration Files
 
@@ -149,13 +134,13 @@ Promptfoo evaluates each test case and shows:
 ### Example Output
 
 ```
-┌─────────────────────────────────────────┬────────────┬────────────┐
-│ Test Case                               │ GPT-4o     │ Claude 3.5 │
-├─────────────────────────────────────────┼────────────┼────────────┤
-│ TDD: Should follow Red-Green-Refactor   │ ✅ Pass    │ ✅ Pass    │
-│ TDD: Should create test list first      │ ✅ Pass    │ ✅ Pass    │
-│ Jira CLI: Should use --plain flag       │ ✅ Pass    │ ⚠️  Partial│
-└─────────────────────────────────────────┴────────────┴────────────┘
+┌─────────────────────────────────────────┬────────────┐
+│ Test Case                               │ GPT-4o-mini│
+├─────────────────────────────────────────┼────────────┤
+│ TDD: Should follow Red-Green-Refactor   │ ✅ Pass    │
+│ TDD: Should create test list first      │ ✅ Pass    │
+│ Jira CLI: Should use --plain flag       │ ✅ Pass    │
+└─────────────────────────────────────────┴────────────┘
 ```
 
 ## CI Integration

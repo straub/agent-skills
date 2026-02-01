@@ -4,24 +4,19 @@
 description: 'Agent Skills Evaluation Suite'
 
 # Provider configuration - can be overridden via CLI or environment
-# Uses GitHub Models to access both OpenAI and Claude models
+# Uses GitHub Models to access OpenAI models
 # Override with: promptfoo eval -p <provider>
 providers:
   - github:openai/gpt-4o-mini
-  - github:anthropic/claude-4-sonnet
-
-# Prompts - These inject skill content into the LLM context
-prompts:
-  - label: 'TDD Skill'
-    id: file://skills/test-driven-development/SKILL.md
-  - label: 'Jira CLI Skill'
-    id: file://skills/jira-cli/SKILL.md
 
 # Test cases
+# Each test case inlines its prompt to ensure proper skill/test mapping
 tests:
   # Test-Driven Development Skill Tests
   - description: 'TDD: Should follow Red-Green-Refactor cycle'
-    prompt: 'TDD Skill'
+    prompt:
+      label: 'TDD Skill'
+      id: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'I need to implement a function that calculates the factorial of a number. Guide me through the process.'
     assert:
@@ -37,7 +32,9 @@ tests:
           - 'Write a test'
     
   - description: 'TDD: Should create test list first'
-    prompt: 'TDD Skill'
+    prompt:
+      label: 'TDD Skill'
+      id: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'I need to implement a user authentication feature with login and logout. Where do I start?'
     assert:
@@ -49,7 +46,9 @@ tests:
           - 'test case'
 
   - description: 'TDD: Should handle bug fixes with failing test first'
-    prompt: 'TDD Skill'
+    prompt:
+      label: 'TDD Skill'
+      id: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'I found a bug where the login function accepts empty passwords. How should I fix this?'
     assert:
@@ -61,7 +60,9 @@ tests:
           - 'RED'
 
   - description: 'TDD: Should address legacy code appropriately'
-    prompt: 'TDD Skill'
+    prompt:
+      label: 'TDD Skill'
+      id: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'I need to add a feature to legacy code that has no tests. What should I do?'
     assert:
@@ -73,7 +74,9 @@ tests:
           - 'Strangler Fig'
 
   - description: 'TDD: Should discourage skipping tests'
-    prompt: 'TDD Skill'
+    prompt:
+      label: 'TDD Skill'
+      id: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'Can I skip writing tests for this simple utility function?'
     assert:
@@ -84,7 +87,9 @@ tests:
 
   # Jira CLI Skill Tests
   - description: 'Jira CLI: Should use --plain flag for listing'
-    prompt: 'Jira CLI Skill'
+    prompt:
+      label: 'Jira CLI Skill'
+      id: file://skills/jira-cli/SKILL.md
     vars:
       task: 'Show me all open issues in the PROJECT project.'
     assert:
@@ -96,7 +101,9 @@ tests:
           - 'jira list'
 
   - description: 'Jira CLI: Should use --no-input for creation'
-    prompt: 'Jira CLI Skill'
+    prompt:
+      label: 'Jira CLI Skill'
+      id: file://skills/jira-cli/SKILL.md
     vars:
       task: 'Create a new task in Jira for implementing user authentication.'
     assert:
@@ -104,7 +111,9 @@ tests:
         value: '--no-input'
 
   - description: 'Jira CLI: Should recommend template for complex descriptions'
-    prompt: 'Jira CLI Skill'
+    prompt:
+      label: 'Jira CLI Skill'
+      id: file://skills/jira-cli/SKILL.md
     vars:
       task: 'Create a new user story with multiple acceptance criteria and bullet points.'
     assert:
@@ -114,7 +123,9 @@ tests:
           - '--template'
 
   - description: 'Jira CLI: Should use JQL for complex queries'
-    prompt: 'Jira CLI Skill'
+    prompt:
+      label: 'Jira CLI Skill'
+      id: file://skills/jira-cli/SKILL.md
     vars:
       task: 'Find all high priority bugs that were updated in the last week and are assigned to me.'
     assert:
