@@ -261,14 +261,14 @@ testData:
     expected: "Should help create a test list covering happy path, edge cases, and error conditions"
 evaluators:
   - name: Mentions writing tests first
-    llm-rubric:
-      rubric: The response should emphasize writing tests before implementation code, following TDD principles
+    type: llm-rubric
+    rubric: The response should emphasize writing tests before implementation code, following TDD principles
   - name: Includes Red-Green-Refactor cycle
-    llm-rubric:
-      rubric: The response should mention or demonstrate the Red-Green-Refactor cycle as the core TDD workflow
+    type: llm-rubric
+    rubric: The response should mention or demonstrate the Red-Green-Refactor cycle as the core TDD workflow
   - name: Provides specific actionable guidance
-    llm-rubric:
-      rubric: The response should give concrete steps or examples, not just theory
+    type: llm-rubric
+    rubric: The response should give concrete steps or examples, not just theory
   - name: Addresses the specific scenario
-    llm-rubric:
-      rubric: The response should be tailored to the user's specific situation (bug fix, new feature, refactoring, etc.)
+    type: llm-rubric
+    rubric: The response should be tailored to the user's specific situation (bug fix, new feature, refactoring, etc.)

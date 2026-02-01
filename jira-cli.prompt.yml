@@ -189,14 +189,14 @@ testData:
     expected: "Should use 'jira issue view PROJ-123 --plain --comments N'"
 evaluators:
   - name: Uses --plain or --no-input flags
-    llm-rubric:
-      rubric: The response should include --plain flag for listing commands or --no-input for creation commands to avoid interactive mode
+    type: llm-rubric
+    rubric: The response should include --plain flag for listing commands or --no-input for creation commands to avoid interactive mode
   - name: Recommends template file for complex issues
-    llm-rubric:
-      rubric: When creating issues with complex descriptions, the response should recommend using --template flag with a file
+    type: llm-rubric
+    rubric: When creating issues with complex descriptions, the response should recommend using --template flag with a file
   - name: Provides correct command syntax
-    llm-rubric:
-      rubric: Commands should follow correct jira-cli syntax with appropriate flags and arguments
+    type: llm-rubric
+    rubric: Commands should follow correct jira-cli syntax with appropriate flags and arguments
   - name: Addresses the specific task
-    llm-rubric:
-      rubric: The response should directly solve the user's specific Jira CLI task
+    type: llm-rubric
+    rubric: The response should directly solve the user's specific Jira CLI task

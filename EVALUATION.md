@@ -37,8 +37,8 @@ testData:
     expected: "What the response should include"
 evaluators:
   - name: Check for key concept
-    llm-rubric:
-      rubric: The response should mention X
+    type: llm-rubric
+    rubric: The response should mention X
 ```
 
 ### GitHub Actions Workflow
@@ -125,8 +125,8 @@ Add to the `evaluators` array:
 ```yaml
 evaluators:
   - name: Descriptive name
-    llm-rubric:
-      rubric: The response should [criteria]
+    type: llm-rubric
+    rubric: The response should [criteria]
 ```
 
 ### Changing the Model
