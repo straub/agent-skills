@@ -1,6 +1,6 @@
 # Agent Skills Evaluations
 
-This directory contains Promptfoo evaluation configurations for testing the effectiveness of the agent skills in this repository.
+This file documents Promptfoo evaluation configurations for testing the effectiveness of the agent skills in this repository.
 
 ## Overview
 
@@ -35,19 +35,24 @@ GitHub Copilot support requires additional configuration. See [Copilot Configura
 
 ### Run Evaluations
 
-**With OpenAI (default):**
+**With both OpenAI and Claude (default):**
 ```bash
 npm run eval
 ```
 
-**With Claude (Anthropic):**
+**With Claude only:**
 ```bash
-npx promptfoo eval -p anthropic:claude-3-5-sonnet-20241022
+npm run eval:claude
+```
+
+**With GitHub Models:**
+```bash
+npm run eval:github
 ```
 
 **With a specific Claude model:**
 ```bash
-npx promptfoo eval -p anthropic:claude-3-5-haiku-20241022
+npx promptfoo eval -p anthropic:claude-3-5-sonnet-20241022
 ```
 
 **With multiple providers (comparison):**
@@ -91,11 +96,12 @@ GITHUB_TOKEN=your_github_token_here
 Promptfoo doesn't have native GitHub Copilot support yet, but you can use it through the OpenAI-compatible endpoint:
 
 ```bash
-# Use GitHub Models (if you have access)
-npx promptfoo eval -p openai:gpt-4 --api-base https://models.github.com --api-key $GITHUB_TOKEN
+# Use GitHub Models
+export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
+npm run eval:github
 ```
 
-**Note:** GitHub Copilot's chat models may not be directly accessible via API at this time. Check GitHub's documentation for current API availability.
+GitHub Models are now supported through Promptfoo's native `github:` provider.
 
 ## Provider Options
 
@@ -108,6 +114,7 @@ npx promptfoo eval -p openai:gpt-4 --api-base https://models.github.com --api-ke
 ### Anthropic (Claude) Models
 - `anthropic:claude-3-5-sonnet-20241022` - **Recommended**, best balance
 - `anthropic:claude-3-5-haiku-20241022` - Fastest, lowest cost
+- `anthropic:claude-3-opus-20240229` - Most capable (if needed)
 - `anthropic:claude-3-opus-20240229` - Most capable (if needed)
 
 ### Configuration Files
@@ -165,7 +172,7 @@ To add tests for a new skill:
 ```yaml
 prompts:
   - label: 'My New Skill'
-    file://skills/my-new-skill/SKILL.md
+    id: file://skills/my-new-skill/SKILL.md
 ```
 
 2. Add test cases:

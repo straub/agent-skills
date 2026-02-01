@@ -4,16 +4,17 @@
 description: 'Agent Skills Evaluation Suite'
 
 # Provider configuration - can be overridden via CLI or environment
-# Default to gpt-4o-mini for cost-effectiveness
-# Override with: promptfoo eval -c promptfooconfig.yaml -p anthropic:claude-3-5-sonnet-20241022
+# Defaults to both OpenAI and Claude for comprehensive evaluation
+# Override with: promptfoo eval -p <provider>
 providers:
   - openai:gpt-4o-mini
+  - anthropic:claude-3-5-sonnet-20241022
 
 # Prompts - These inject skill content into the LLM context
 prompts:
   - label: 'TDD Skill'
     id: file://skills/test-driven-development/SKILL.md
-  - label: 'Jira CLI Skill'  
+  - label: 'Jira CLI Skill'
     id: file://skills/jira-cli/SKILL.md
 
 # Test cases
