@@ -10,13 +10,11 @@ providers:
   - github:openai/gpt-4o-mini
 
 # Test cases
-# Each test case inlines its prompt to ensure proper skill/test mapping
+# Each test case specifies its prompt to ensure proper skill/test mapping
 tests:
   # Test-Driven Development Skill Tests
   - description: 'TDD: Should follow Red-Green-Refactor cycle'
-    prompt:
-      label: 'TDD Skill'
-      id: file://skills/test-driven-development/SKILL.md
+    prompt: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'I need to implement a function that calculates the factorial of a number. Guide me through the process.'
     assert:
@@ -32,9 +30,7 @@ tests:
           - 'Write a test'
     
   - description: 'TDD: Should create test list first'
-    prompt:
-      label: 'TDD Skill'
-      id: file://skills/test-driven-development/SKILL.md
+    prompt: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'I need to implement a user authentication feature with login and logout. Where do I start?'
     assert:
@@ -46,9 +42,7 @@ tests:
           - 'test case'
 
   - description: 'TDD: Should handle bug fixes with failing test first'
-    prompt:
-      label: 'TDD Skill'
-      id: file://skills/test-driven-development/SKILL.md
+    prompt: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'I found a bug where the login function accepts empty passwords. How should I fix this?'
     assert:
@@ -60,9 +54,7 @@ tests:
           - 'RED'
 
   - description: 'TDD: Should address legacy code appropriately'
-    prompt:
-      label: 'TDD Skill'
-      id: file://skills/test-driven-development/SKILL.md
+    prompt: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'I need to add a feature to legacy code that has no tests. What should I do?'
     assert:
@@ -74,9 +66,7 @@ tests:
           - 'Strangler Fig'
 
   - description: 'TDD: Should discourage skipping tests'
-    prompt:
-      label: 'TDD Skill'
-      id: file://skills/test-driven-development/SKILL.md
+    prompt: file://skills/test-driven-development/SKILL.md
     vars:
       task: 'Can I skip writing tests for this simple utility function?'
     assert:
@@ -87,9 +77,7 @@ tests:
 
   # Jira CLI Skill Tests
   - description: 'Jira CLI: Should use --plain flag for listing'
-    prompt:
-      label: 'Jira CLI Skill'
-      id: file://skills/jira-cli/SKILL.md
+    prompt: file://skills/jira-cli/SKILL.md
     vars:
       task: 'Show me all open issues in the PROJECT project.'
     assert:
@@ -101,9 +89,7 @@ tests:
           - 'jira list'
 
   - description: 'Jira CLI: Should use --no-input for creation'
-    prompt:
-      label: 'Jira CLI Skill'
-      id: file://skills/jira-cli/SKILL.md
+    prompt: file://skills/jira-cli/SKILL.md
     vars:
       task: 'Create a new task in Jira for implementing user authentication.'
     assert:
@@ -111,9 +97,7 @@ tests:
         value: '--no-input'
 
   - description: 'Jira CLI: Should recommend template for complex descriptions'
-    prompt:
-      label: 'Jira CLI Skill'
-      id: file://skills/jira-cli/SKILL.md
+    prompt: file://skills/jira-cli/SKILL.md
     vars:
       task: 'Create a new user story with multiple acceptance criteria and bullet points.'
     assert:
@@ -123,9 +107,7 @@ tests:
           - '--template'
 
   - description: 'Jira CLI: Should use JQL for complex queries'
-    prompt:
-      label: 'Jira CLI Skill'
-      id: file://skills/jira-cli/SKILL.md
+    prompt: file://skills/jira-cli/SKILL.md
     vars:
       task: 'Find all high priority bugs that were updated in the last week and are assigned to me.'
     assert:
