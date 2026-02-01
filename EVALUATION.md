@@ -38,7 +38,7 @@ testData:
 evaluators:
   - name: Check for key concept
     llm-rubric:
-      value: The response should mention X
+      rubric: The response should mention X
 ```
 
 ### GitHub Actions Workflow
@@ -126,7 +126,7 @@ Add to the `evaluators` array:
 evaluators:
   - name: Descriptive name
     llm-rubric:
-      value: The response should [criteria]
+      rubric: The response should [criteria]
 ```
 
 ### Changing the Model

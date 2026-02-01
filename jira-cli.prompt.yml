@@ -190,13 +190,13 @@ testData:
 evaluators:
   - name: Uses --plain or --no-input flags
     llm-rubric:
-      value: The response should include --plain flag for listing commands or --no-input for creation commands to avoid interactive mode
+      rubric: The response should include --plain flag for listing commands or --no-input for creation commands to avoid interactive mode
   - name: Recommends template file for complex issues
     llm-rubric:
-      value: When creating issues with complex descriptions, the response should recommend using --template flag with a file
+      rubric: When creating issues with complex descriptions, the response should recommend using --template flag with a file
   - name: Provides correct command syntax
     llm-rubric:
-      value: Commands should follow correct jira-cli syntax with appropriate flags and arguments
+      rubric: Commands should follow correct jira-cli syntax with appropriate flags and arguments
   - name: Addresses the specific task
     llm-rubric:
-      value: The response should directly solve the user's specific Jira CLI task
+      rubric: The response should directly solve the user's specific Jira CLI task
