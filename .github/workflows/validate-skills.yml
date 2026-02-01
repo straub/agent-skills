@@ -109,8 +109,8 @@ jobs:
         with:
           name: promptfoo-results
           path: |
+            output.json
             promptfoo-results.json
-            promptfoo-results*.json
-            .promptfoo/output/*.json
+            .promptfoo/**/*.json
           retention-days: 30
           if-no-files-found: warn
