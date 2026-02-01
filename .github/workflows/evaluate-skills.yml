@@ -1,0 +1,129 @@
+name: Evaluate Skills with GitHub Models CLI
+
+permissions:
+  models: read
+  contents: read
+  pull-requests: write
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'skills/**'
+      - '**/*.prompt.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'skills/**'
+      - '**/*.prompt.yml'
+  workflow_dispatch:
+
+jobs:
+  evaluate-prompts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup gh-models
+        run: gh extension install github/gh-models
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Run TDD skill evaluation
+        id: eval-tdd
+        run: |
+          echo "## TDD Skill Evaluation Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          
+          if gh models eval tdd.prompt.yml > tdd_eval_output.txt 2>&1; then
+            echo "✅ All TDD evaluations passed!" >> "$GITHUB_STEP_SUMMARY"
+            cat tdd_eval_output.txt >> "$GITHUB_STEP_SUMMARY"
+            echo "tdd_status=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "❌ Some TDD evaluations failed!" >> "$GITHUB_STEP_SUMMARY"
+            cat tdd_eval_output.txt >> "$GITHUB_STEP_SUMMARY"
+            echo "tdd_status=failure" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Run Jira CLI skill evaluation
+        id: eval-jira
+        run: |
+          echo "## Jira CLI Skill Evaluation Results" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          
+          if gh models eval jira-cli.prompt.yml > jira_eval_output.txt 2>&1; then
+            echo "✅ All Jira CLI evaluations passed!" >> "$GITHUB_STEP_SUMMARY"
+            cat jira_eval_output.txt >> "$GITHUB_STEP_SUMMARY"
+            echo "jira_status=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "❌ Some Jira CLI evaluations failed!" >> "$GITHUB_STEP_SUMMARY"
+            cat jira_eval_output.txt >> "$GITHUB_STEP_SUMMARY"
+            echo "jira_status=failure" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      - name: Comment on PR with evaluation results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            
+            let body = '## 🤖 Skill Evaluation Results\n\n';
+            
+            // Add TDD results
+            const tddStatus = '${{ steps.eval-tdd.outputs.tdd_status }}';
+            const tddOutput = fs.existsSync('tdd_eval_output.txt') 
+              ? fs.readFileSync('tdd_eval_output.txt', 'utf8') 
+              : 'No output available';
+            
+            body += `### Test-Driven Development Skill\n`;
+            body += tddStatus === 'success' ? '✅ **Passed**\n\n' : '❌ **Failed**\n\n';
+            body += '```\n' + tddOutput + '\n```\n\n';
+            
+            // Add Jira results
+            const jiraStatus = '${{ steps.eval-jira.outputs.jira_status }}';
+            const jiraOutput = fs.existsSync('jira_eval_output.txt')
+              ? fs.readFileSync('jira_eval_output.txt', 'utf8')
+              : 'No output available';
+            
+            body += `### Jira CLI Skill\n`;
+            body += jiraStatus === 'success' ? '✅ **Passed**\n\n' : '❌ **Failed**\n\n';
+            body += '```\n' + jiraOutput + '\n```\n\n';
+            
+            body += '---\n*Evaluated using GitHub Models CLI with `gh models eval`*';
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Upload evaluation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evaluation-results
+          path: |
+            tdd_eval_output.txt
+            jira_eval_output.txt
+          retention-days: 30
+
+      - name: Check evaluation status
+        run: |
+          TDD_STATUS="${{ steps.eval-tdd.outputs.tdd_status }}"
+          JIRA_STATUS="${{ steps.eval-jira.outputs.jira_status }}"
+          
+          if [[ "$TDD_STATUS" == "failure" ]] || [[ "$JIRA_STATUS" == "failure" ]]; then
+            echo "One or more evaluations failed"
+            exit 1
+          fi
+          
+          echo "All evaluations passed!"

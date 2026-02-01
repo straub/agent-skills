@@ -122,6 +122,23 @@ skills-ref validate ./skills/my-skill-name
 
 This checks that your `SKILL.md` frontmatter is valid and follows all naming conventions.
 
+## Evaluating Skill Quality
+
+This repository uses GitHub Models CLI to evaluate the quality of skill guidance. Evaluations run automatically in CI when skills change.
+
+To run evaluations locally:
+
+```bash
+# Install GitHub Models CLI extension
+gh extension install github/gh-models
+
+# Run evaluations
+gh models eval tdd.prompt.yml
+gh models eval jira-cli.prompt.yml
+```
+
+See [EVALUATION.md](EVALUATION.md) for details on the evaluation system, test cases, and how to modify evaluations.
+
 ## Resources
 
 - [Agent Skills Specification](https://agentskills.io/specification)

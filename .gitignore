@@ -2,3 +2,6 @@
 __pycache__/
 .idea/
 .vscode/
+
+# Evaluation outputs
+*_eval_output.txt
