@@ -13,7 +13,7 @@ providers:
 prompts:
   - label: 'TDD Skill'
     id: file://prompts/tdd-prompt.txt
-      
+
   - label: 'Jira CLI Skill'
     id: file://prompts/jira-prompt.txt
 
