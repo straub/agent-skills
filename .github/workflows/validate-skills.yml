@@ -78,63 +78,20 @@ jobs:
     needs: validate
     permissions:
       contents: read
+      pull-requests: write
       models: read
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Run Promptfoo evaluation
+        uses: promptfoo/promptfoo-action@v1
         with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
-      
-      - name: Run Promptfoo evaluations
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          config: promptfooconfig.yaml
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROMPTFOO_DISABLE_TELEMETRY: 1
-        run: |
-          # GitHub Models requires GITHUB_TOKEN
-          if [ -z "$GITHUB_TOKEN" ]; then
-            echo "⚠️  No GITHUB_TOKEN found"
-            echo "⚠️  Skipping LLM-based evaluations"
-            echo "ℹ️  GitHub Models evaluations require GITHUB_TOKEN (automatically available in GitHub Actions)"
-            exit 0
-          fi
-          
-          # Run evaluations with GitHub Models (OpenAI and Claude)
-          echo "🔍 Running evaluations with GitHub Models (OpenAI GPT-4o-mini and Claude 4 Sonnet)"
-          npx promptfoo eval --no-table
-          
-          # Check for failures in the results
-          if [ -f promptfoo-results.json ]; then
-            echo ""
-            echo "📊 Evaluation Summary:"
-            # Extract pass/fail stats from the JSON results
-            grep -o '"passed":[0-9]*' promptfoo-results.json | head -1 || echo "Results file found"
-            
-            # Note: Promptfoo exits with non-zero if there are failures
-            # The job will fail automatically if the eval command fails
-          fi
-      
-      - name: Check evaluation results
-        if: always()
-        run: |
-          if [ -f promptfoo-results.json ]; then
-            echo "✅ Evaluation completed. Results saved."
-            # Show summary if jq is available
-            if command -v jq &> /dev/null; then
-              echo ""
-              echo "Summary:"
-              jq -r '.stats | "Total: \(.totalTests) | Passed: \(.passed) | Failed: \(.failed) | Errors: \(.errors)"' promptfoo-results.json || true
-            fi
-          else
-            echo "ℹ️  No evaluation results found (likely skipped due to missing API keys)"
-          fi
       
       - name: Upload evaluation results
         if: always()

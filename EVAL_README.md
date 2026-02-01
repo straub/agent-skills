@@ -160,12 +160,17 @@ Promptfoo evaluates each test case and shows:
 
 ## CI Integration
 
-Evaluations run automatically in GitHub Actions on:
+Evaluations run automatically in GitHub Actions using the official `promptfoo-action`:
 - Pull requests that modify skills
 - Pushes to the main branch
 - Manual workflow dispatch
 
-The CI workflow uses GitHub Models with the automatically provided `GITHUB_TOKEN`. No additional API key configuration is required.
+The CI workflow uses:
+- **promptfoo-action** for automated evaluation
+- **GitHub Models** with the automatically provided `GITHUB_TOKEN`
+- **No additional API key configuration required**
+
+Results are posted as PR comments with interactive links and uploaded as workflow artifacts (30-day retention).
 
 ## Adding New Tests
 
