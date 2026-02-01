@@ -10,12 +10,31 @@ providers:
   - github:openai/gpt-4o-mini
   - github:anthropic/claude-4-sonnet
 
-# Prompts - These inject skill content into the LLM context
+# Prompts - These inject skill content into the LLM context and use task variables
 prompts:
   - label: 'TDD Skill'
-    id: file://skills/test-driven-development/SKILL.md
+    id: |
+      You are an AI assistant with expertise in software development. You have access to the following skill guide:
+
+      ---SKILL GUIDE---
+      {{file://skills/test-driven-development/SKILL.md}}
+      ---END SKILL GUIDE---
+
+      User request: {{task}}
+
+      Using the skill guide above, provide guidance on how to approach this task following best practices.
+  
   - label: 'Jira CLI Skill'
-    id: file://skills/jira-cli/SKILL.md
+    id: |
+      You are an AI assistant with expertise in Jira CLI. You have access to the following skill guide:
+
+      ---SKILL GUIDE---
+      {{file://skills/jira-cli/SKILL.md}}
+      ---END SKILL GUIDE---
+
+      User request: {{task}}
+
+      Using the skill guide above, provide guidance on how to use Jira CLI for this task.
 
 # Test cases
 tests:
