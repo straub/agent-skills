@@ -9,21 +9,13 @@ description: 'Agent Skills Evaluation Suite'
 providers:
   - id: github:openai/gpt-4o-mini
 
-# Prompts are defined as templates that combine skill content with user tasks
-prompts:
-  - label: 'TDD Skill'
-    id: file://prompts/tdd-prompt.txt
-
-  - label: 'Jira CLI Skill'
-    id: file://prompts/jira-prompt.txt
-
-# Test cases
+# Test cases - each test specifies its own prompt to avoid cross-product issues
 tests:
-  # Test-Driven Development Skill Tests (prompt index 0)
+  # Test-Driven Development Skill Tests
   - description: 'TDD: Should follow Red-Green-Refactor cycle'
+    prompt: file://prompts/tdd-prompt.txt
     vars:
       task: 'I need to implement a function that calculates the factorial of a number. Guide me through the process.'
-      __expected_prompt: 0
     assert:
       - type: contains-any
         value:
@@ -37,9 +29,9 @@ tests:
           - 'Write a test'
     
   - description: 'TDD: Should create test list first'
+    prompt: file://prompts/tdd-prompt.txt
     vars:
       task: 'I need to implement a user authentication feature with login and logout. Where do I start?'
-      __expected_prompt: 0
     assert:
       - type: contains-any
         value:
@@ -49,9 +41,9 @@ tests:
           - 'test case'
 
   - description: 'TDD: Should handle bug fixes with failing test first'
+    prompt: file://prompts/tdd-prompt.txt
     vars:
       task: 'I found a bug where the login function accepts empty passwords. How should I fix this?'
-      __expected_prompt: 0
     assert:
       - type: contains-any
         value:
@@ -61,9 +53,9 @@ tests:
           - 'RED'
 
   - description: 'TDD: Should address legacy code appropriately'
+    prompt: file://prompts/tdd-prompt.txt
     vars:
       task: 'I need to add a feature to legacy code that has no tests. What should I do?'
-      __expected_prompt: 0
     assert:
       - type: contains-any
         value:
@@ -73,20 +65,20 @@ tests:
           - 'Strangler Fig'
 
   - description: 'TDD: Should discourage skipping tests'
+    prompt: file://prompts/tdd-prompt.txt
     vars:
       task: 'Can I skip writing tests for this simple utility function?'
-      __expected_prompt: 0
     assert:
       - type: icontains
         value: 'test'
       - type: not-icontains
         value: 'yes, skip'
 
-  # Jira CLI Skill Tests (prompt index 1)
+  # Jira CLI Skill Tests
   - description: 'Jira CLI: Should use --plain flag for listing'
+    prompt: file://prompts/jira-prompt.txt
     vars:
       task: 'Show me all open issues in the PROJECT project.'
-      __expected_prompt: 1
     assert:
       - type: contains
         value: '--plain'
@@ -96,17 +88,17 @@ tests:
           - 'jira list'
 
   - description: 'Jira CLI: Should use --no-input for creation'
+    prompt: file://prompts/jira-prompt.txt
     vars:
       task: 'Create a new task in Jira for implementing user authentication.'
-      __expected_prompt: 1
     assert:
       - type: contains
         value: '--no-input'
 
   - description: 'Jira CLI: Should recommend template for complex descriptions'
+    prompt: file://prompts/jira-prompt.txt
     vars:
       task: 'Create a new user story with multiple acceptance criteria and bullet points.'
-      __expected_prompt: 1
     assert:
       - type: contains-any
         value:
@@ -114,9 +106,9 @@ tests:
           - '--template'
 
   - description: 'Jira CLI: Should use JQL for complex queries'
+    prompt: file://prompts/jira-prompt.txt
     vars:
       task: 'Find all high priority bugs that were updated in the last week and are assigned to me.'
-      __expected_prompt: 1
     assert:
       - type: contains-any
         value:
