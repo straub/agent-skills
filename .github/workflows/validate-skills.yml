@@ -85,12 +85,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       
+      - name: Set up promptfoo cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/promptfoo
+          key: ${{ runner.os }}-promptfoo-${{ hashFiles('promptfooconfig.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-promptfoo-
+      
       - name: Run Promptfoo evaluation
         uses: promptfoo/promptfoo-action@v1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           config: promptfooconfig.yaml
+          cache-path: ~/.cache/promptfoo
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROMPTFOO_DISABLE_TELEMETRY: 1
       
       - name: Upload evaluation results
