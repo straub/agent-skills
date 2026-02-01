@@ -1,0 +1,17 @@
+{
+  "name": "agent-skills",
+  "version": "1.0.0",
+  "description": "Personal agent skills repository for hosting custom skills developed for use with AI agents like Claude, GitHub Copilot, and other AI assistants that support the Agent Skills specification.",
+  "main": "index.js",
+  "scripts": {
+    "eval": "promptfoo eval",
+    "eval:view": "promptfoo view",
+    "eval:openai": "promptfoo eval -p github:openai/gpt-4o-mini"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "promptfoo": "0.120.20"
+  }
+}

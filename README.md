@@ -122,6 +122,46 @@ skills-ref validate ./skills/my-skill-name
 
 This checks that your `SKILL.md` frontmatter is valid and follows all naming conventions.
 
+## Evaluating Skills
+
+This repository includes automated evaluations using [Promptfoo](https://www.promptfoo.dev/) to test how well skills guide LLMs to produce correct responses.
+
+### Running Evaluations Locally
+
+1. Install dependencies:
+```bash
+npm install
+```
+
+2. Set up an API key for your preferred LLM provider:
+```bash
+# For OpenAI (via GitHub Models)
+export GITHUB_TOKEN=your_github_token_here
+
+# OR for direct OpenAI API
+export OPENAI_API_KEY=your_api_key_here
+```
+
+3. Run evaluations:
+```bash
+# With OpenAI (default)
+npm run eval
+
+# With specific OpenAI model
+npm run eval:openai
+```
+
+4. View results:
+```bash
+npm run eval:view
+```
+
+See [EVAL_README.md](EVAL_README.md) for detailed documentation on running evaluations.
+
+### CI Evaluations
+
+Evaluations run automatically in CI on skill changes using GitHub Models with the automatically provided `GITHUB_TOKEN`. No API key setup is required.
+
 ## Resources
 
 - [Agent Skills Specification](https://agentskills.io/specification)
