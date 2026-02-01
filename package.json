@@ -5,7 +5,6 @@
   "main": "index.js",
   "scripts": {
     "build:prompts": "node scripts/build-prompts.js",
-    "prebuild": "npm run build:prompts",
     "eval": "npm run build:prompts && promptfoo eval",
     "eval:view": "promptfoo view",
     "eval:openai": "npm run build:prompts && promptfoo eval -p github:openai/gpt-4o-mini"

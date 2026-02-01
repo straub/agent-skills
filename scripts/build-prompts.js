@@ -4,6 +4,13 @@
 const fs = require('fs');
 const path = require('path');
 
+// Template suffix added to all skill prompts
+const TASK_TEMPLATE_SUFFIX = `
+
+---
+
+User task: {{task}}`;
+
 const skills = [
   {
     source: 'skills/test-driven-development/SKILL.md',
@@ -34,11 +41,7 @@ for (const skill of skills) {
   
   const skillContent = fs.readFileSync(sourcePath, 'utf8');
   
-  const promptTemplate = `${skillContent}
-
----
-
-User task: {{task}}`;
+  const promptTemplate = skillContent + TASK_TEMPLATE_SUFFIX;
   
   const targetDir = path.dirname(targetPath);
   if (!fs.existsSync(targetDir)) {
