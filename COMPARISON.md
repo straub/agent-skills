@@ -8,7 +8,7 @@ Both approaches provide automated LLM-based evaluation of agent skills, but they
 
 | Aspect | GitHub Models CLI (This PR) | Promptfoo (PR #4) |
 |--------|---------------------------|------------------|
-| **Dependencies** | Just `gh` CLI extension | Node.js, npm, promptfoo package (16k+ dependencies) |
+| **Dependencies** | Just `gh` CLI extension | Node.js, npm, promptfoo package (16,000+ dependencies) |
 | **Configuration Files** | 2 `.prompt.yml` files | `promptfooconfig.yaml`, `package.json`, `package-lock.json`, build scripts |
 | **Total LOC** | ~800 (2 prompts + workflow + docs) | ~16,000+ (includes package-lock.json) |
 | **CI Authentication** | Automatic via `GITHUB_TOKEN` | Requires `GITHUB_TOKEN` setup |
