@@ -91,6 +91,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           config: promptfooconfig.yaml
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROMPTFOO_DISABLE_TELEMETRY: 1
       
       - name: Upload evaluation results
