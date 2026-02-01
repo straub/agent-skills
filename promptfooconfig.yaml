@@ -4,11 +4,11 @@
 description: 'Agent Skills Evaluation Suite'
 
 # Provider configuration - can be overridden via CLI or environment
-# Defaults to both OpenAI and Claude for comprehensive evaluation
+# Uses GitHub Models to access both OpenAI and Claude models
 # Override with: promptfoo eval -p <provider>
 providers:
-  - openai:gpt-4o-mini
-  - anthropic:claude-3-5-sonnet-20241022
+  - github:openai/gpt-4o-mini
+  - github:anthropic/claude-4-sonnet
 
 # Prompts - These inject skill content into the LLM context
 prompts:

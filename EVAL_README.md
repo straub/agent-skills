@@ -35,9 +35,14 @@ GitHub Copilot support requires additional configuration. See [Copilot Configura
 
 ### Run Evaluations
 
-**With both OpenAI and Claude (default):**
+**With both OpenAI and Claude (default via GitHub Models):**
 ```bash
 npm run eval
+```
+
+**With OpenAI only:**
+```bash
+npm run eval:openai
 ```
 
 **With Claude only:**
@@ -45,19 +50,16 @@ npm run eval
 npm run eval:claude
 ```
 
-**With GitHub Models:**
+**With multiple models (comparison):**
 ```bash
-npm run eval:github
+npm run eval:compare
 ```
 
-**With a specific Claude model:**
+**With a specific model via GitHub Models:**
 ```bash
-npx promptfoo eval -p anthropic:claude-3-5-sonnet-20241022
+npx promptfoo eval -p github:anthropic/claude-4-opus
+npx promptfoo eval -p github:openai/gpt-5
 ```
-
-**With multiple providers (comparison):**
-```bash
-npx promptfoo eval -p openai:gpt-4o-mini -p anthropic:claude-3-5-sonnet-20241022
 ```
 
 ### View Results
@@ -73,49 +75,58 @@ Or open the generated JSON file:
 cat promptfoo-results.json
 ```
 
-## Using GitHub Copilot
+## Using GitHub Models
 
-GitHub Copilot can be used as a provider through the OpenAI-compatible API. 
+GitHub Models provide access to multiple AI providers (OpenAI, Claude, Gemini, etc.) through a unified interface.
 
-### Setup for GitHub Copilot
+### Setup for GitHub Models
 
-1. **Get a GitHub token with Copilot access:**
-   - Go to https://github.com/settings/tokens
-   - Create a token with `copilot` scope
-   - Save the token securely
+1. **GitHub Token:**
+   - GitHub Actions automatically provides `GITHUB_TOKEN`, so no setup is needed in CI
+   - For local development, you can use your GitHub personal access token
 
-2. **Configure the GitHub Copilot provider:**
+2. **Local Development:**
 
 Create a `.env` file in the repository root:
 ```bash
 GITHUB_TOKEN=your_github_token_here
 ```
 
-3. **Run with GitHub Copilot:**
-
-Promptfoo doesn't have native GitHub Copilot support yet, but you can use it through the OpenAI-compatible endpoint:
+3. **Run Evaluations:**
 
 ```bash
-# Use GitHub Models
-export GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
-npm run eval:github
+# Use default models (OpenAI GPT-4o-mini and Claude 4 Sonnet)
+npm run eval
+
+# Or specific models
+npm run eval:openai    # OpenAI only
+npm run eval:claude    # Claude only
+npm run eval:compare   # Both providers
 ```
 
-GitHub Models are now supported through Promptfoo's native `github:` provider.
+GitHub Models provide access to:
+- OpenAI models (GPT-4o, GPT-5 series)
+- Claude models (Claude 4 Sonnet, Claude 4 Opus)
+- Google Gemini, Meta Llama, and other providers
 
 ## Provider Options
 
-### OpenAI Models
-- `openai:gpt-4o` - Most capable, higher cost
-- `openai:gpt-4o-mini` - **Default**, balanced performance and cost
-- `openai:gpt-4-turbo` - Previous generation flagship
-- `openai:gpt-3.5-turbo` - Fastest, lowest cost
+### GitHub Models (All Providers)
+All evaluations now use GitHub Models, which provides unified access:
 
-### Anthropic (Claude) Models
-- `anthropic:claude-3-5-sonnet-20241022` - **Recommended**, best balance
-- `anthropic:claude-3-5-haiku-20241022` - Fastest, lowest cost
-- `anthropic:claude-3-opus-20240229` - Most capable (if needed)
-- `anthropic:claude-3-opus-20240229` - Most capable (if needed)
+**OpenAI via GitHub Models:**
+- `github:openai/gpt-4o-mini` - **Default**, balanced performance and cost
+- `github:openai/gpt-4o` - Most capable OpenAI model
+- `github:openai/gpt-5` - Latest OpenAI model
+
+**Claude via GitHub Models:**
+- `github:anthropic/claude-4-sonnet` - **Default**, best balance
+- `github:anthropic/claude-4-opus` - Most capable Claude model
+- `github:anthropic/claude-3-5-sonnet` - Previous generation
+
+**Other Providers:**
+- `github:google/gemini-2.5-pro` - Google's latest
+- `github:meta/llama-4-maverick` - Meta's Llama 4
 
 ### Configuration Files
 
@@ -154,15 +165,7 @@ Evaluations run automatically in GitHub Actions on:
 - Pushes to the main branch
 - Manual workflow dispatch
 
-The CI workflow requires `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` to be set as a repository secret.
-
-### Adding Secrets to GitHub
-
-1. Go to repository Settings → Secrets and variables → Actions
-2. Click "New repository secret"
-3. Add one of:
-   - Name: `OPENAI_API_KEY`, Value: your OpenAI API key
-   - Name: `ANTHROPIC_API_KEY`, Value: your Anthropic API key
+The CI workflow uses GitHub Models with the automatically provided `GITHUB_TOKEN`. No additional API key configuration is required.
 
 ## Adding New Tests
 

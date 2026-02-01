@@ -1,21 +1,24 @@
-# Quick Start: Running Evals with Claude and GitHub Copilot
+# Quick Start: Running Evals with GitHub Models
 
-This guide shows how to run evaluations using Claude (Anthropic) or GitHub Copilot.
+This guide shows how to run evaluations using GitHub Models, which provides unified access to OpenAI, Claude, and other AI providers.
 
-## Setup for Claude (Anthropic)
+## Setup for GitHub Models
 
-### 1. Get Your API Key
+### 1. GitHub Token (Automatic in CI)
 
-1. Go to [Anthropic Console](https://console.anthropic.com/)
-2. Sign in or create an account
-3. Navigate to Settings → [API Keys](https://console.anthropic.com/settings/keys)
-4. Click "Create Key" and copy the key (starts with `sk-ant-`)
+GitHub Actions automatically provides `GITHUB_TOKEN`, so **no setup is needed for CI**.
 
-### 2. Configure the API Key
+### 2. Local Development Setup
 
-**Option A: Environment Variable (Recommended)**
+For local evaluation, use a GitHub personal access token:
+
+1. Go to [GitHub Settings → Personal Access Tokens](https://github.com/settings/tokens)
+2. Create a token (classic or fine-grained)
+3. Copy the token
+
+**Option A: Environment Variable**
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...
+export GITHUB_TOKEN=your_github_token_here
 ```
 
 **Option B: .env File**
@@ -23,22 +26,24 @@ export ANTHROPIC_API_KEY=sk-ant-...
 # Create .env file from template
 cp .env.example .env
 
-# Edit .env and add your key
-# ANTHROPIC_API_KEY=sk-ant-...
+# Edit .env and add your token
+echo "GITHUB_TOKEN=your_github_token_here" >> .env
 ```
 
 ### 3. Run Evaluations
 
 ```bash
-# Run with Claude Sonnet (recommended)
+# Run with both OpenAI and Claude (default)
+npm run eval
+
+# Run with OpenAI only
+npm run eval:openai
+
+# Run with Claude only  
 npm run eval:claude
 
-# Or use the CLI directly
-npx promptfoo eval -p anthropic:claude-3-5-sonnet-20241022
-
-# Other Claude models:
-npx promptfoo eval -p anthropic:claude-3-5-haiku-20241022  # Faster, cheaper
-npx promptfoo eval -p anthropic:claude-3-opus-20240229     # Most capable
+# Compare OpenAI vs Claude
+npm run eval:compare
 ```
 
 ### 4. View Results
@@ -47,85 +52,54 @@ npx promptfoo eval -p anthropic:claude-3-opus-20240229     # Most capable
 npm run eval:view
 ```
 
-## Setup for GitHub Copilot
+## Available Models via GitHub Models
 
-### Current Status
+GitHub Models provides access to multiple AI providers:
 
-As of January 2026, GitHub Copilot's models are primarily available through the IDE and GitHub.com interface. Direct API access for evaluations depends on:
+### OpenAI Models
+- `github:openai/gpt-4o-mini` - **Default**, balanced performance and cost
+- `github:openai/gpt-4o` - Most capable OpenAI model
+- `github:openai/gpt-5` - Latest generation (if available)
 
-1. **GitHub Models** (Preview): Limited access, requires waitlist approval
-2. **Azure OpenAI**: If you have GitHub Copilot Business/Enterprise with Azure integration
+### Claude Models
+- `github:anthropic/claude-4-sonnet` - **Default**, best balance
+- `github:anthropic/claude-4-opus` - Most capable Claude model
+- `github:anthropic/claude-3-5-sonnet` - Previous generation
 
-### Option 1: GitHub Models (Preview)
+### Other Providers
+- `github:google/gemini-2.5-pro` - Google Gemini
+- `github:meta/llama-4-maverick` - Meta Llama 4
+- `github:xai/grok-4` - xAI Grok
 
-If you have access to [GitHub Models](https://github.com/marketplace/models):
-
-```bash
-# Get a GitHub token with model access
-# https://github.com/settings/tokens
-
-export GITHUB_TOKEN=ghp_...
-
-# Use with compatible endpoints (check GitHub Models docs for current API)
-npx promptfoo eval -p openai:gpt-4o \
-  --api-base https://models.github.com \
-  --api-key $GITHUB_TOKEN
-```
-
-**Note**: API availability and endpoints may change. Check [GitHub Models documentation](https://docs.github.com/en/github-models) for current status.
-
-### Option 2: Azure OpenAI (Enterprise)
-
-If your organization has GitHub Copilot Enterprise with Azure OpenAI:
+### Custom Model Selection
 
 ```bash
-export AZURE_OPENAI_API_KEY=...
-export AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+# Use specific models
+npx promptfoo eval -p github:openai/gpt-5 -p github:anthropic/claude-4-opus
 
-npx promptfoo eval -p azureopenai:deployment-name
+# Single model
+npx promptfoo eval -p github:google/gemini-2.5-pro
 ```
 
-See [Promptfoo Azure OpenAI docs](https://www.promptfoo.dev/docs/providers/azure/) for details.
+## CI Integration
 
-### Alternative: Use OpenAI or Claude
+Evaluations run automatically in GitHub Actions with no configuration needed:
 
-For now, we recommend using OpenAI or Claude directly for evaluations:
+1. GitHub Actions provides `GITHUB_TOKEN` automatically
+2. Workflow runs on skill changes, PRs, and pushes to main
+3. Results are uploaded as artifacts (30-day retention)
 
-```bash
-# OpenAI (same models that power Copilot)
-export OPENAI_API_KEY=sk-...
-npm run eval
-
-# Claude (high quality alternative)
-export ANTHROPIC_API_KEY=sk-ant-...
-npm run eval:claude
-```
-
-## Comparing Providers
-
-Run evaluations with multiple providers to compare results:
-
-```bash
-# Compare OpenAI vs Claude
-npm run eval:compare
-
-# Compare multiple models
-npx promptfoo eval \
-  -p openai:gpt-4o-mini \
-  -p openai:gpt-4o \
-  -p anthropic:claude-3-5-sonnet-20241022 \
-  -p anthropic:claude-3-5-haiku-20241022
-```
+No API key secrets needed - GitHub Models access is included with GitHub Actions.
 
 ## Understanding Results
 
 After running evaluations, you'll see:
 
 - ✅ **Pass**: All assertions passed for this test case
-- ❌ **Fail**: One or more assertions failed
+- ❌ **Fail**: One or more assertions failed  
 - 📊 **Pass Rate**: Percentage of tests that passed
 
-View detailed results in the interactive UI:
+View detailed results:
 
 ```bash
 npm run eval:view
@@ -133,23 +107,22 @@ npm run eval:view
 
 ## Cost Estimates
 
-Approximate costs per full evaluation run (9 test cases):
+GitHub Models pricing (approximate):
 
-| Provider | Model | Cost per run* |
-|----------|-------|---------------|
+| Provider | Model | Cost per eval run* |
+|----------|-------|-------------------|
 | OpenAI | gpt-4o-mini | ~$0.01 |
 | OpenAI | gpt-4o | ~$0.05 |
-| Anthropic | claude-3-5-haiku | ~$0.01 |
-| Anthropic | claude-3-5-sonnet | ~$0.03 |
+| Claude | claude-4-sonnet | ~$0.03 |
+| Claude | claude-4-opus | ~$0.10 |
 
-*Estimates based on typical response lengths. Actual costs may vary.
+*Estimates based on typical response lengths. Multi-provider runs cost proportionally more.
 
 ## Troubleshooting
 
-### "API key not found"
-- Verify you've set the correct environment variable
-- Check that your key is valid (starts with expected prefix)
-- Ensure you haven't accidentally added quotes or spaces
+### "No GITHUB_TOKEN found"
+- **In CI**: Token is automatic, check workflow permissions
+- **Locally**: Set `export GITHUB_TOKEN=your_token_here`
 
 ### "Rate limit exceeded"
 ```bash
@@ -160,14 +133,13 @@ npx promptfoo eval --max-concurrency 1
 npx promptfoo eval --delay 1000
 ```
 
-### "Invalid model name"
-- Check [Promptfoo Providers](https://www.promptfoo.dev/docs/providers/) for exact model names
-- Anthropic: `anthropic:claude-3-5-sonnet-20241022`
-- OpenAI: `openai:gpt-4o-mini`
+### "Model not found"
+- Verify model name matches GitHub Models format: `github:provider/model-name`
+- Check [GitHub Models marketplace](https://github.com/marketplace/models) for available models
 
 ## More Information
 
 - [Full Evaluation Documentation](EVAL_README.md)
 - [Promptfoo Documentation](https://www.promptfoo.dev/docs/intro/)
-- [Anthropic API Reference](https://docs.anthropic.com/en/api/getting-started)
-- [OpenAI API Reference](https://platform.openai.com/docs/api-reference)
+- [GitHub Models Documentation](https://docs.github.com/en/github-models)
+- [Promptfoo GitHub Provider](https://www.promptfoo.dev/docs/providers/github/)

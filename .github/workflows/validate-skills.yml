@@ -95,40 +95,20 @@ jobs:
       
       - name: Run Promptfoo evaluations
         env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PROMPTFOO_DISABLE_TELEMETRY: 1
         run: |
-          # Check if any API key is available
-          if [ -z "$OPENAI_API_KEY" ] && [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$GITHUB_TOKEN" ]; then
-            echo "⚠️  No API keys found (OPENAI_API_KEY, ANTHROPIC_API_KEY, or GITHUB_TOKEN)"
+          # GitHub Models requires GITHUB_TOKEN
+          if [ -z "$GITHUB_TOKEN" ]; then
+            echo "⚠️  No GITHUB_TOKEN found"
             echo "⚠️  Skipping LLM-based evaluations"
-            echo "ℹ️  To enable full evaluations, add API keys to repository secrets"
+            echo "ℹ️  GitHub Models evaluations require GITHUB_TOKEN (automatically available in GitHub Actions)"
             exit 0
           fi
           
-          # Build provider list based on available keys
-          providers=""
-          
-          if [ -n "$OPENAI_API_KEY" ]; then
-            echo "✓ OpenAI API key found"
-            providers="$providers -p openai:gpt-4o-mini"
-          fi
-          
-          if [ -n "$ANTHROPIC_API_KEY" ]; then
-            echo "✓ Anthropic API key found"
-            providers="$providers -p anthropic:claude-3-5-sonnet-20241022"
-          fi
-          
-          if [ -n "$GITHUB_TOKEN" ]; then
-            echo "✓ GitHub token found"
-            providers="$providers -p github:gpt-4o-mini"
-          fi
-          
-          # Run evaluations with all available providers
-          echo "🔍 Running evaluations with providers:$providers"
-          npx promptfoo eval $providers --no-table
+          # Run evaluations with GitHub Models (OpenAI and Claude)
+          echo "🔍 Running evaluations with GitHub Models (OpenAI GPT-4o-mini and Claude 4 Sonnet)"
+          npx promptfoo eval --no-table
           
           # Check for failures in the results
           if [ -f promptfoo-results.json ]; then
