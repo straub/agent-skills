@@ -163,6 +163,7 @@ ORDER BY created DESC
 - Custom fields require field ID: `--custom field-id=value`
 - Debug with `jira --debug`
 
-User Task: {{task}}
 
-Provide guidance following the skill above:
+---
+
+User task: {{task}}

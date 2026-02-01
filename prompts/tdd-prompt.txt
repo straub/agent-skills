@@ -281,6 +281,7 @@ Always run the test suite before committing. Configure pre-commit hooks to:
 - Robert C. Martin, "The Three Laws of TDD" and "The Cycles of TDD"
 - Martin Fowler, "TestDrivenDevelopment" — martinfowler.com/bliki
 - Michael Feathers, *Working Effectively with Legacy Code* (2004)
-User Task: {{task}}
 
-Provide guidance following the skill above:
+---
+
+User task: {{task}}
