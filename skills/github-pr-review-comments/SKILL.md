@@ -1,6 +1,7 @@
 ---
 name: github-pr-review-comments
 description: Comprehensive workflow for managing GitHub PR review comments using gh CLI and GraphQL API. Use when asked to address review comments, find unreplied comments, reply to review threads, or resolve/unresolve review conversations. Supports finding ALL comments across pagination boundaries, replying to threads, and resolving conversations.
+compatibility: Requires gh CLI installed and authenticated (gh auth login)
 ---
 
 # GitHub PR Review Comments
