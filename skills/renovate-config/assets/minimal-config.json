@@ -1,0 +1,45 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "schedule": [
+    "before 3am on Monday"
+  ],
+  "automerge": false,
+  "automergeType": "pr",
+  "rules": [
+    {
+      "description": "Automatically merge lock file updates",
+      "matchUpdateTypes": [
+        "lockfileUpdate"
+      ],
+      "automerge": true,
+      "automergeType": "squash"
+    },
+    {
+      "description": "Automatically merge patch updates",
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true,
+      "automergeType": "squash"
+    },
+    {
+      "description": "Create PR for minor updates",
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "automerge": false
+    },
+    {
+      "description": "Create PR for major updates",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "labels": [
+        "breaking-change"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,104 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "schedule": [
+    "before 3am on Monday",
+    "before 3am on Wednesday",
+    "before 3am on Friday"
+  ],
+  "timezone": "UTC",
+  "semanticCommits": "enabled",
+  "semanticCommitType": "chore",
+  "semanticCommitScope": "deps",
+  "prConcurrentLimit": 5,
+  "prCreationLimit": 10,
+  "minimumReleaseAge": "3 days",
+  "automerge": false,
+  "automergeType": "pr",
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "🤖 Dependency Dashboard",
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "before 3am on Monday"
+    ]
+  },
+  "rules": [
+    {
+      "description": "Lock file updates - always merge",
+      "matchUpdateTypes": [
+        "lockfileUpdate"
+      ],
+      "automerge": true,
+      "automergeType": "squash",
+      "schedule": [
+        "at any time"
+      ]
+    },
+    {
+      "description": "Internal packages - always merge",
+      "matchPackagePatterns": [
+        "^@myorg/"
+      ],
+      "automerge": true,
+      "automergeType": "squash"
+    },
+    {
+      "description": "Patch updates - always merge",
+      "matchUpdateTypes": [
+        "patch"
+      ],
+      "automerge": true,
+      "automergeType": "squash"
+    },
+    {
+      "description": "Development dependencies - merge minors",
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "minor"
+      ],
+      "automerge": true,
+      "groupName": "Dev dependency updates"
+    },
+    {
+      "description": "Development dependencies - review majors",
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "schedule": [
+        "weekly"
+      ]
+    },
+    {
+      "description": "Production major updates - review only",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "labels": [
+        "breaking-change"
+      ],
+      "schedule": [
+        "weekly"
+      ]
+    },
+    {
+      "description": "Docker images - conservative",
+      "matchDatasources": [
+        "docker"
+      ],
+      "automerge": false,
+      "schedule": [
+        "weekly"
+      ],
+      "groupName": "Docker image updates"
+    }
+  ]
+}

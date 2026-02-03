@@ -1,0 +1,101 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "schedule": [
+    "before 3am on Monday"
+  ],
+  "automerge": false,
+  "rules": [
+    {
+      "description": "Docker base images - conservative",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchImages": [
+        "node",
+        "python",
+        "postgres",
+        "redis",
+        "nginx"
+      ],
+      "automerge": false,
+      "schedule": [
+        "weekly"
+      ],
+      "minimumReleaseAge": "7 days",
+      "groupName": "Base image updates"
+    },
+    {
+      "description": "Custom Docker registry images - moderate",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchImages": [
+        "ghcr.io/myorg/.*"
+      ],
+      "automerge": true,
+      "automergeType": "squash",
+      "schedule": [
+        "twice weekly"
+      ],
+      "minimumReleaseAge": "2 days",
+      "groupName": "Custom image updates"
+    },
+    {
+      "description": "Docker digest updates - always merge",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "digest"
+      ],
+      "automerge": true,
+      "automergeType": "squash",
+      "schedule": [
+        "at any time"
+      ],
+      "groupName": "Docker digest updates"
+    },
+    {
+      "description": "Docker major versions - manual review",
+      "matchDatasources": [
+        "docker"
+      ],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "labels": [
+        "docker-breaking",
+        "requires-testing"
+      ],
+      "schedule": [
+        "weekly"
+      ]
+    },
+    {
+      "description": "NPM packages - standard rules",
+      "matchDatasources": [
+        "npm"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "automerge": true,
+      "groupName": "NPM dependency updates"
+    },
+    {
+      "description": "Lock file maintenance",
+      "matchUpdateTypes": [
+        "lockfileUpdate"
+      ],
+      "automerge": true,
+      "automergeType": "squash",
+      "schedule": [
+        "at any time"
+      ]
+    }
+  ]
+}
