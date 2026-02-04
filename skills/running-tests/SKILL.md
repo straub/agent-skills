@@ -24,7 +24,7 @@ Use when running
 - Always redirect test output to a file!
 
 ```bash
-npm test 2>&1 > /tmp/test-output.txt
+npm test > /tmp/test-output.txt 2>&1
 ```
 
 - Analyze that file as needed after the run is finished
