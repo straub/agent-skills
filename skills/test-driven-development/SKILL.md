@@ -1,6 +1,6 @@
 ---
 name: test-driven-development
-description: Test-Driven Development specialist enforcing write-tests-first methodology. Use PROACTIVELY when writing new features, fixing bugs, or refactoring code. Ensures code quality through Red-Green-Refactor cycles. Apply this skill by default for any code changes - don't wait to be asked.
+description: Enforce Test-Driven Development (TDD) workflow for all code changes. Apply PROACTIVELY by default using Red-Green-Refactor cycles for features, bug fixes, and refactoring.
 ---
 
 # Test-Driven Development Skill
@@ -63,7 +63,7 @@ Pick the next test and start over. Small steps, frequent validation.
 
 ---
 
-## When to Use TDD (ALWAYS)
+## What to Test with TDD
 
 Apply TDD proactively to:
 
