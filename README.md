@@ -112,6 +112,12 @@ Skills in this repository can be used with various AI platforms that support the
 - **Claude API** - Use the Skills API
 - **Other compatible agents** - Follow platform-specific instructions
 
+Install via the command line using
+
+```bash
+npx skills add straub/agent-skills
+```
+
 ## Validating Skills
 
 Use the [skills-ref](https://github.com/agentskills/agentskills/tree/main/skills-ref) reference library to validate your skills:
