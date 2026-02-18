@@ -160,5 +160,9 @@ ORDER BY created DESC
 ## Notes
 
 - Default pagination is 100 items; use `--paginate N` for more
-- Custom fields require field ID: `--custom field-id=value`
+- Custom fields require config entries under `issue.fields.custom`. If a field is missing, re-run `jira init` or add it manually.
+- The `--custom` key is derived from the field name in config using lowercase, dash-separated form (e.g. `Epic Name` -> `epic-name`).
+- Examples:
+  - `--custom epic-type="Tech Enabler"`
+  - `--custom foo-bar="Baz"`
 - Debug with `jira --debug`
