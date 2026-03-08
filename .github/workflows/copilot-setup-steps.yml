@@ -27,7 +27,7 @@ jobs:
     # Define steps to prepare the environment before Copilot starts working.
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Set up Python for skills-ref validation
       - name: Set up Python
