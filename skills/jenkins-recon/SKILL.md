@@ -1,6 +1,6 @@
 ---
 name: jenkins-recon
-description: Efficiently query a Jenkins organization/multibranch folder's REST API to investigate build failures across many jobs and branches — finding recent failures, checking console logs for a specific error, building a failure timeline, and tracing a shared-library commit to the PR that introduced it. Use when asked to check how many builds failed with some error, when a bug started, whether a fix held, or similar Jenkins-wide investigation.
+description: Efficiently query a Jenkins organization/multibranch folder's REST API to investigate build failures across many jobs and branches — finding recent failures, checking console logs for a specific error, categorizing unknown/mixed failure causes, building a failure timeline, and tracing a shared-library commit to the PR that introduced it. Use when asked to check how many builds failed with some error, why builds are flaky, when a bug started, whether a fix held, or similar Jenkins-wide investigation.
 ---
 
 # Jenkins Recon
@@ -44,6 +44,25 @@ when the folder contains many jobs. Narrow before you widen:
 This also applies to console-log checks: don't fetch `consoleText` for every build
 you have URLs for if a cheaper filter (result, timestamp) can shrink the list first.
 
+## Finding the true first-failed stage via `wfapi/describe`
+
+A multi-stage pipeline build's overall `result: FAILURE` doesn't tell you which
+stage actually broke — one root failure (e.g. a test container dying) cascades
+into every downstream stage also reporting FAILED, so the last failed stage in
+the summary view is often a symptom, not the cause. Pipeline builds expose a
+stage-level breakdown at:
+
+```bash
+curl -sS "<build-url>/wfapi/describe"
+```
+
+This returns each stage's `name`, `status`, and `startTimeMillis`. Sort by start
+time and take the *first* stage with `status: FAILED` (a later `status: ABORTED`
+usually just means Jenkins killed the rest of the pipeline after that earlier
+failure) — that's the real root stage. Scope your log-reading to that stage
+specifically rather than assuming the last FAILED stage mentioned is where the
+problem started.
+
 ## Grep the failure, not a filename that also appears in success logs
 
 A build log can mention the same filename/string in both a success message and an
@@ -55,8 +74,52 @@ Always grep the most specific fragment of the *actual error/exception text*, not
 just an artifact name that could appear in unrelated log lines. Verify by manually
 reading one matched log before trusting the count.
 
+The same caution applies in reverse: a surprising **zero** matches from an
+exact-string grep doesn't necessarily mean the error is absent — part of the
+line can vary between occurrences (a resolved hostname, a container ID, a
+dynamic port) even though it's the same underlying failure. If zero seems
+wrong, loosen the pattern to a more stable substring, then manually verify
+each hit before trusting that count either.
+
 Use `scripts/grep-builds.sh` to check a list of build URLs for an exact string in
 their console output (see script for usage — handles the parallelism gotchas below).
+
+## Open-ended triage when you don't know the error text yet
+
+The exact-string grep above assumes you already know what you're looking for.
+When the task is "categorize the causes of these failures" rather than "did
+error X recur," there's no string to grep for yet — you have to discover it:
+
+1. **Sample, don't scan everything.** Pull a manageable set of failed builds
+   (e.g. one recent failure per project, or the last N failures per job) rather
+   than every failure across every branch — full coverage on unknown-shape data
+   is expensive and mostly redundant once you've seen a few instances of each
+   distinct cause.
+2. **Pull a log window around the failure, not the whole log.** Use the failing
+   stage from `wfapi/describe` above to scope which part of `consoleText` to
+   read, or just check the tail — don't read an entire build log to find one
+   error.
+3. **Extract each build's failure signature and cluster.** Pull out the actual
+   error line/exception from each sampled build and group builds by matching
+   signature. A signature that recurs across *unrelated* jobs/repos is a real,
+   systemic cause worth flagging first; one confined to a single job/build is
+   more likely one-off flakiness.
+4. **Filter to the stage(s) the question is actually about.** If you're asked
+   to categorize failures in a specific stage (e.g. "why are the E2E tests
+   flaky"), use the first-failed-stage from `wfapi/describe` to separate builds
+   that failed *in* that stage from builds that never reached it because an
+   earlier, unrelated stage failed first. A build that failed before the stage
+   in scope isn't an instance of the thing you were asked about, even though
+   its overall pipeline result is also FAILURE. Mention out-of-scope upstream
+   failures as a brief aside if they're notably common — they may be worth a
+   separate investigation — but don't fold their counts into the category you
+   were asked to categorize.
+5. **Only then scale up precisely.** Once a signature looks like the dominant
+   cause, switch to the exact-string workflow above (`grep-builds.sh`) to get
+   an accurate count across the full build set for that specific cause.
+6. **Report what you sampled vs. skipped.** State the actual coverage (e.g.
+   "one most-recent-failure per project, not full history") so a categorization
+   from a sample isn't mistaken for an exhaustive count.
 
 ## Tracing a shared Jenkins library commit to its PR
 
