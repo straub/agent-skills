@@ -105,16 +105,17 @@ present.
 
 ## Interaction Phase
 
-Present findings one at a time, not as a single wall of changes:
+Present all findings together in one turn, not dragged out across multiple
+round trips. For each finding, give:
 
-1. State the issue you found
-2. Propose a specific, concrete change
-3. Explain what it fixes
+1. The issue you found
+2. A specific, concrete proposed change
+3. What it fixes
 
-Wait for a decision on each before moving to the next. Approved items move
-to implementation; rejected or deferred ones get dropped or refined based
-on feedback. Don't batch-apply everything at once — the value of this skill
-is in the review, not the volume of edits.
+Then ask, in that same turn, which findings to implement — approve all,
+approve a subset, or reject/defer any. Only move to the Implementation
+Phase once the user has responded with their picks. Don't apply anything
+before that response comes back.
 
 ## Implementation Phase
 
