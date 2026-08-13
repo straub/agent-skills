@@ -1,6 +1,6 @@
 ---
 name: jenkins-recon
-description: Efficiently query a Jenkins organization/multibranch folder's REST API to investigate build failures across many jobs and branches — finding recent failures, checking console logs for a specific error, categorizing unknown/mixed failure causes, building a failure timeline, and tracing a shared-library commit to the PR that introduced it. Use when asked to check how many builds failed with some error, why builds are flaky, when a bug started, whether a fix held, or similar Jenkins-wide investigation.
+description: Investigate the state of a Jenkins instance through its REST API, console logs, thread dumps, and container logs — build failures, hangs and stalls, queue backlogs, lock contention, restarts and deploys, capacity, and verifying whether a change or fix actually took effect. Use for any Jenkins-wide reconnaissance question: how many builds hit some error, why builds are stuck or slow, when something started, what is blocking what, whether a config change applied, or whether a fix held.
 ---
 
 # Jenkins Recon
@@ -14,12 +14,17 @@ false positives.
 `WebFetch` pipes content through a summarizing model — it will silently truncate a
 large JSON response (e.g. hundreds of jobs) down to a couple of entries with no
 warning. Hit the JSON API directly with `curl` and parse it yourself
-(`python3 -c 'import json...'` or `jq`). URL-encode the `tree` param's brackets
-(`%5B` `%5D`) since raw `[`/`]` breaks some shells/curl invocations:
+(`python3 -c 'import json...'` or `jq`). Pass `-g` (`--globoff`). The `[`/`]` in a `tree=` param are not a shell problem —
+**curl** treats them as its own URL-globbing syntax and silently returns an empty
+body with **exit code 0**, no error message. Silent-empty is the signature; if a
+`tree=` query returns nothing, suspect this before suspecting auth or the query.
 
 ```bash
-curl -sS "https://<jenkins>/job/<org-folder>/api/json?tree=jobs%5Bname%5D"
+curl -sg -n "https://<jenkins>/job/<org-folder>/api/json?tree=jobs[name]"
 ```
+
+`-g` keeps the query readable; percent-encoding as `%5B`/`%5D` also works if you
+prefer. `-n` uses `~/.netrc` for auth.
 
 ## `tree=` shapes for multibranch org folders
 
@@ -43,6 +48,17 @@ when the folder contains many jobs. Narrow before you widen:
 
 This also applies to console-log checks: don't fetch `consoleText` for every build
 you have URLs for if a cheaper filter (result, timestamp) can shrink the list first.
+
+## Don't trust the named scope when shared infrastructure is involved
+
+If the thing being investigated could stem from infrastructure shared across org
+folders — a global library cache, a lock, a shared executor pool — the org
+folder(s) named in the request are not necessarily the whole blast radius. On
+2026-08-12 a lock holder lived in a folder nobody had mentioned, with waiters in
+two more; the request named only two of the five that mattered. Sweep every org
+folder on the instance (`curl .../api/json?tree=jobs[name]` at the root lists
+them) or explicitly confirm scope before concluding a root cause is isolated to
+the folders named up front.
 
 ## Finding the true first-failed stage via `wfapi/describe`
 
@@ -81,8 +97,77 @@ dynamic port) even though it's the same underlying failure. If zero seems
 wrong, loosen the pattern to a more stable substring, then manually verify
 each hit before trusting that count either.
 
+Two more variants of "the pattern quietly disagrees with reality", both of which
+cost real time on a 2026-08-12 investigation:
+
+- **Ref-name variants.** Exact-matching `Could not find origin/HEAD` missed every
+  `Could not find refs/remotes/origin/HEAD`, undercounting the bucket for several
+  cycles and masking the one build that actually held the lock. When a version or
+  ref string can be spelled more than one way, match the stable fragment.
+- **A missing line is itself a state.** Classifying on the *presence* of a line
+  assumes every healthy build prints it. When a shared library is served from
+  cache it never prints `Attempting to resolve`, so a classifier keyed on that
+  bucketed 326 perfectly healthy builds as "unknown". Before trusting a bucket,
+  ask what a *successful* build omits.
+
 Use `scripts/grep-builds.sh` to check a list of build URLs for an exact string in
 their console output (see script for usage — handles the parallelism gotchas below).
+
+## Thread dumps when builds are stuck rather than failing
+
+A stalled build often shows nothing useful in its own console — the last line is
+whatever printed before it blocked, and the REST API just reports `building: true`.
+The controller-wide thread dump is what identifies the blocker.
+
+```bash
+curl -sg -n "https://<jenkins>/threadDump" -o /tmp/td.txt
+grep -oE 'owned by "[^"]*" Id=[0-9]+' /tmp/td.txt | sort | uniq -c | sort -rn | head
+```
+
+Ranking by waiter count immediately names the contended locks and who holds them.
+Then pull the owner's own stack (search its `Id=` where it is *not* preceded by
+`owned by`) to see what the holder is actually doing — that distinguishes "holder
+is doing slow legitimate work" from "holder is itself blocked on something else".
+
+Watch for stacked locks: on 2026-08-12 a build held a fair `ReentrantReadWriteLock`
+while itself parked on a JVM-global `ReentrantLock` one layer down, so ~850 threads
+queued behind two `git fetch` subprocesses. The console showed only the first
+symptom; only the dump showed the chain.
+
+Note the last console line pins the blocking call precisely — if a known code path
+prints X then immediately takes a lock, a log ending at X *is* the lock wait.
+
+## When the endpoints you need return 403
+
+A token can read `/api/json` fine and still be refused the diagnostic endpoints —
+`/threadDump`, `/configuration-as-code/export`, and `/manage/configure` all 403 for
+a non-admin token. `/manage/configure` returns a short error page rather than an
+HTTP error, so check the byte count, not just the status.
+
+When config is unreadable, infer it from behaviour instead of giving up: pick an
+observable whose rate or timing differs between the candidate values and measure
+that. Prefer this even when you *can* read the config — it tests what is in effect,
+not what is displayed.
+
+## Inferring a blocked config value from event frequency
+
+The general form of the pointer above: if a config value gates how *often* some
+observable event fires, count that event over a time window and compare the rate
+against what each candidate value would predict. A refresh/TTL-style setting is
+the clean case — a short interval produces a rate roughly an order of magnitude
+higher than a long one, so a handful of occurrences in 30 minutes is enough to
+tell 5-minute from 90-minute apart without ever reading the value.
+
+## `lastBuild`-only sampling hides stuck builds
+
+Sweeping `jobs[name,jobs[name,lastBuild[...]]]` is cheap and usually right, but a
+stuck build silently leaves your sample the moment a newer build starts on the same
+branch. A falling "stuck" count can therefore mean supersession, not recovery.
+
+Cross-check against whether the *queue head* moves: if the same build has been
+oldest for several consecutive checks, nothing is draining regardless of what the
+count says. On 2026-08-12 a count drifted downward for ~50 minutes while the head
+never moved once.
 
 ## Open-ended triage when you don't know the error text yet
 
@@ -147,6 +232,8 @@ picked up revision X" to a real causal story:
 On macOS, `xargs` is BSD xargs, not GNU:
 
 - No `-a file` flag — pipe input instead: `cat urls.txt | xargs -P 8 -I{} ...`
+- macOS ships bash 3.2: no associative arrays (`declare -A` fails with
+  `invalid option`). A wrapper script avoids this too.
 - Inline `bash -c '...'` with several layers of quoting embedded in `-I{}` can fail
   with `xargs: command line cannot be assembled, too long` even for a short,
   reasonable-looking command. Write a small wrapper script and call that from
@@ -161,3 +248,37 @@ weak evidence; a day's worth of real traffic including some unrelated failures i
 strong evidence). For any build that still fails post-fix, read its console log
 manually to confirm the failure is unrelated rather than assuming a clean bill of
 health.
+
+## Running the same check on a recurring cadence
+
+When a fix or an incident needs watching over many cycles rather than one-shot
+verification, match the check interval to how fast the signal is actually
+changing, not to a fixed default — tight (10–15s) right after a risky event like
+a deploy or restart where the interesting window is the first couple of minutes,
+5 minutes for ordinary steady-state watching, 10+ minutes or stopping entirely
+once several consecutive cycles have shown nothing. Widen or narrow explicitly
+rather than leaving one cadence running out of inertia. (A 5-minute default also
+happens to sit comfortably inside typical prompt-cache TTLs, so it's a reasonable
+starting point on cost grounds alone — but that's a token-cost argument, not a
+signal-value one; let the actual rate of change move you off it in either
+direction.)
+
+If you're reporting an ETA (e.g. "backlog clears in ~N minutes") derived from a
+trend across your own prior checks, say so explicitly and state it as a range
+when the trend is noisy rather than a single confident number — a metric that
+oscillates rather than monotonically drains will make a point estimate look more
+precise than the data supports.
+
+Engaging a maintenance/quiet-down mode to stop new arrivals is a legitimate
+diagnostic move here, not just an operational safety step — freezing arrivals is
+often the only way to tell whether something is truly draining versus being
+masked by churn (new items arriving as fast as old ones resolve).
+
+When deciding whether to escalate mid-watch, don't fire on one raw number alone.
+A single metric crossing a threshold is often a sampling artifact of whatever
+you're polling, not a real state — prefer requiring two or more correlated
+signals together (e.g. "the specific thing you'd blame is actually present" AND
+"the downstream count is elevated"), and check whether it's the *same* items
+persisting across consecutive samples rather than just whether a count stays
+high. A count that holds steady while its members completely turn over isn't
+persistence; a count that swings while one specific item never moves is.
