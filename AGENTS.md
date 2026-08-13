@@ -39,6 +39,10 @@ above.
   so enumerate the vocabulary a user would actually reach for, not just the canonical framing.
   A skill about failures that never says "stuck", "hanging", or "slow" will not fire when it
   is most needed.
+- **Keep the `description` YAML-safe.** It is a long unquoted scalar, so a bare `: ` inside it
+  is read as a mapping key and breaks the entire frontmatter — `mapping values are not allowed
+  here`. Use an em dash instead, or quote the whole value. Easy to hit precisely because the
+  field is natural-language prose; CI catches it, but only after a push.
 - Prefer what was learned the hard way — corrections to plausible-but-wrong assumptions, silent
   failure modes, tool gotchas. A skill that only restates the documentation adds nothing.
 - Keep `SKILL.md` scannable. Section headings should be searchable statements of the problem,
