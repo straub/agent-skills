@@ -15,9 +15,12 @@ false positives.
 large JSON response (e.g. hundreds of jobs) down to a couple of entries with no
 warning. Hit the JSON API directly with `curl` and parse it yourself
 (`python3 -c 'import json...'` or `jq`). Pass `-g` (`--globoff`). The `[`/`]` in a `tree=` param are not a shell problem —
-**curl** treats them as its own URL-globbing syntax and silently returns an empty
-body with **exit code 0**, no error message. Silent-empty is the signature; if a
-`tree=` query returns nothing, suspect this before suspecting auth or the query.
+**curl** treats them as its own URL-globbing syntax, rejects `[name]` as a bad
+range, and writes **nothing** to stdout. It exits **3**, but `-s` suppresses the
+`curl: (3) bad range in URL` diagnostic, so with `-s` you see only an empty body.
+Check the exit status rather than inferring from empty output — and note that a
+`;` or another command between the pipeline and `${PIPESTATUS[0]}` clobbers it,
+which is an easy way to convince yourself curl succeeded when it did not.
 
 ```bash
 curl -sg -n "https://<jenkins>/job/<org-folder>/api/json?tree=jobs[name]"
@@ -120,9 +123,14 @@ whatever printed before it blocked, and the REST API just reports `building: tru
 The controller-wide thread dump is what identifies the blocker.
 
 ```bash
-curl -sg -n "https://<jenkins>/threadDump" -o /tmp/td.txt
+curl -sfg -n "https://<jenkins>/threadDump" -o /tmp/td.txt \
+  || { echo "threadDump fetch failed (403? see below)"; exit 1; }
 grep -oE 'owned by "[^"]*" Id=[0-9]+' /tmp/td.txt | sort | uniq -c | sort -rn | head
 ```
+
+`-f` matters here. Without it a 403 still writes an HTML error body to the file,
+the grep matches nothing, and the empty result reads exactly like "no lock
+contention" — the most dangerous possible misreading of this check.
 
 Ranking by waiter count immediately names the contended locks and who holds them.
 Then pull the owner's own stack (search its `Id=` where it is *not* preceded by
@@ -141,8 +149,12 @@ prints X then immediately takes a lock, a log ending at X *is* the lock wait.
 
 A token can read `/api/json` fine and still be refused the diagnostic endpoints —
 `/threadDump`, `/configuration-as-code/export`, and `/manage/configure` all 403 for
-a non-admin token. `/manage/configure` returns a short error page rather than an
-HTTP error, so check the byte count, not just the status.
+a non-admin token. They return a short HTML body along with the 403, so a bare
+`curl -s ... | grep` looks like a clean, empty result.
+
+Check the status explicitly — `-w '%{http_code}'` or `-f` — rather than guessing
+from response size. Body length varies with proxies and customised error pages and
+is not a reliable discriminator.
 
 When config is unreadable, infer it from behaviour instead of giving up: pick an
 observable whose rate or timing differs between the candidate values and measure
@@ -164,10 +176,16 @@ Sweeping `jobs[name,jobs[name,lastBuild[...]]]` is cheap and usually right, but 
 stuck build silently leaves your sample the moment a newer build starts on the same
 branch. A falling "stuck" count can therefore mean supersession, not recovery.
 
-Cross-check against whether the *queue head* moves: if the same build has been
-oldest for several consecutive checks, nothing is draining regardless of what the
-count says. On 2026-08-12 a count drifted downward for ~50 minutes while the head
-never moved once.
+The robust fix is to stop sampling and start tracking: retain the specific build
+IDs/URLs you first observed and re-poll *those*, so a build leaving the sample is
+distinguishable from a build finishing.
+
+Queue-head movement is a useful secondary signal but proves less than it appears.
+A head that never moves is worth investigating — on 2026-08-12 a count drifted
+downward for ~50 minutes while the head sat still — but it does not by itself mean
+nothing is draining, since one permanently blocked item can pin the head while
+other builds start and finish behind it. Treat it as a prompt to look, not a
+conclusion.
 
 ## Open-ended triage when you don't know the error text yet
 
@@ -273,6 +291,12 @@ Engaging a maintenance/quiet-down mode to stop new arrivals is a legitimate
 diagnostic move here, not just an operational safety step — freezing arrivals is
 often the only way to tell whether something is truly draining versus being
 masked by churn (new items arriving as fast as old ones resolve).
+
+**It is controller-wide, so it is not yours to engage.** It blocks every queued
+build on the instance, including work belonging to teams with no connection to the
+incident, and it does not survive a restart. Recommend it to the operator with the
+expected duration and how it will be lifted, and let a human make the call — the
+diagnostic value never justifies unilaterally halting an instance.
 
 When deciding whether to escalate mid-watch, don't fire on one raw number alone.
 A single metric crossing a threshold is often a sampling artifact of whatever
