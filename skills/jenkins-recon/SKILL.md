@@ -1,6 +1,6 @@
 ---
 name: jenkins-recon
-description: Investigate the state of a Jenkins instance through its REST API, console logs, thread dumps, and container logs — build failures, hangs and stalls, queue backlogs, lock contention, restarts and deploys, capacity, and verifying whether a change or fix actually took effect. Use for any Jenkins-wide reconnaissance question: how many builds hit some error, why builds are stuck or slow, when something started, what is blocking what, whether a config change applied, or whether a fix held.
+description: Investigate the state of a Jenkins instance through its REST API, console logs, thread dumps, and container logs — build failures, hangs and stalls, queue backlogs, lock contention, restarts and deploys, capacity, and verifying whether a change or fix actually took effect. Use for any Jenkins-wide reconnaissance question — how many builds hit some error, why builds are stuck or slow, when something started, what is blocking what, whether a config change applied, or whether a fix held.
 ---
 
 # Jenkins Recon
