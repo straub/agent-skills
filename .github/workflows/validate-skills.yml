@@ -5,10 +5,16 @@ on:
     branches: [ main ]
     paths:
       - 'skills/**'
+      - 'promptfooconfig.yaml'
+      - 'package.json'
+      - '.github/workflows/validate-skills.yml'
   pull_request:
     branches: [ main ]
     paths:
       - 'skills/**'
+      - 'promptfooconfig.yaml'
+      - 'package.json'
+      - '.github/workflows/validate-skills.yml'
   workflow_dispatch:
 
 jobs:
@@ -66,3 +72,45 @@ jobs:
           done
           
           exit $exit_code
+
+  evaluate:
+    runs-on: ubuntu-latest
+    needs: validate
+    permissions:
+      contents: read
+      pull-requests: write
+      models: read
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up promptfoo cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/.promptfoo/cache
+          key: ${{ runner.os }}-promptfoo-${{ hashFiles('promptfooconfig.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-promptfoo-
+      
+      - name: Run Promptfoo evaluation
+        uses: promptfoo/promptfoo-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          config: promptfooconfig.yaml
+          cache-path: ${{ runner.temp }}/.promptfoo/cache
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PROMPTFOO_DISABLE_TELEMETRY: 1
+      
+      - name: Upload evaluation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: promptfoo-results
+          path: |
+            output.json
+            promptfoo-results.json
+            .promptfoo/**/*.json
+          retention-days: 30
+          if-no-files-found: warn

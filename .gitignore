@@ -2,3 +2,11 @@
 __pycache__/
 .idea/
 .vscode/
+node_modules/
+promptfoo-results*.json
+output.json
+.promptfoo/
+.env
+
+# Ignore generated prompt files (built from skills/)
+prompts/
