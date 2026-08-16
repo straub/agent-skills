@@ -1,0 +1,90 @@
+{
+  "extends": [
+    "config:base"
+  ],
+  "schedule": [
+    "before 3am on Monday",
+    "before 3am on Wednesday"
+  ],
+  "automerge": false,
+  "rules": [
+    {
+      "description": "Monorepo: Core packages - strict testing",
+      "matchPaths": [
+        "packages/core/**"
+      ],
+      "automerge": false,
+      "require": [
+        "status-success"
+      ],
+      "schedule": [
+        "weekly"
+      ],
+      "groupName": "Core package updates"
+    },
+    {
+      "description": "Monorepo: Service packages - aggressive updates",
+      "matchPaths": [
+        "services/**"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true,
+      "automergeType": "squash",
+      "schedule": [
+        "twice a week"
+      ],
+      "groupName": "Service package updates"
+    },
+    {
+      "description": "Monorepo: UI packages - careful with majors",
+      "matchPaths": [
+        "packages/ui/**"
+      ],
+      "matchUpdateTypes": [
+        "patch",
+        "minor"
+      ],
+      "automerge": true,
+      "groupName": "UI package minor updates"
+    },
+    {
+      "description": "Monorepo: Examples - always merge non-breaking",
+      "matchPaths": [
+        "examples/**"
+      ],
+      "matchUpdateTypes": [
+        "minor",
+        "patch"
+      ],
+      "automerge": true,
+      "groupName": "Example app updates"
+    },
+    {
+      "description": "Monorepo: Lock files",
+      "matchUpdateTypes": [
+        "lockfileUpdate"
+      ],
+      "automerge": true,
+      "automergeType": "squash",
+      "schedule": [
+        "at any time"
+      ]
+    },
+    {
+      "description": "Monorepo: Major updates across all paths",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "automerge": false,
+      "labels": [
+        "breaking-change"
+      ],
+      "schedule": [
+        "weekly"
+      ]
+    }
+  ]
+}
